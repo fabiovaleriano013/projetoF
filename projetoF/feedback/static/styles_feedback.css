@@ -1,0 +1,205 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    transition: 2s ease, opacity;
+}
+
+body {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+:root {
+    --container: #483D3F;
+    --primary-color: #058ED9;
+    --secondary-color: #F4EBD9;
+    --complementary-color: #A39A92;
+    --contrast-color: #77685D;
+}
+
+main {
+    flex: 1;
+}
+
+nav {
+    display: flex;
+    justify-content: space-around;
+    flex-direction: column;
+    height: 100%;
+    width: 5%;
+    border: none;
+    background: var(--primary-color);
+}
+
+
+nav a {
+    font-size: 40px;
+    color: #fff;
+    text-decoration: none;
+    padding: 20px;
+    text-align: center;
+    /* margin-left: -5%; */
+}
+
+.cont {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto;
+    border: none;
+    position: relative;
+}
+
+/* Estilos de rolagem */
+.cont::-webkit-scrollbar {
+    width: 8px;
+}
+
+.cont::-webkit-scrollbar-thumb {
+    background-color: #aaa;
+    border-radius: 10px;
+}
+
+section {
+    width: 95%;
+    max-height: max-content;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 1;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+section.hide {
+    opacity: 0;
+    transform: translateY(-50px);
+    /* Ajuste o valor conforme necessário */
+    pointer-events: none;
+    /* Impede interações enquanto estiver oculto */
+    position: absolute;
+    /* Remove o espaço ocupado pela seção oculta */
+}
+
+section::-webkit-scrollbar {
+    width: 8px;
+}
+
+section::-webkit-scrollbar-thumb {
+    background-color: #aaa;
+    border-radius: 10px;
+}
+
+#feedback {
+    font-style: var(--container);
+    border-radius: 10px;
+    border: none;
+    width: auto;
+    margin: 5vh 0 5vh 0;
+}
+
+#feedback form {
+    background-color: var(--complementary-color);
+}
+
+#feedback:target form h1 {
+    opacity: 0;
+    animation: 2s fadeIn forwards .5s;
+}
+
+#historic .card2 {
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.card2 {
+    background-color: var(--complementary-color);
+    font-style: var(--container);
+    border-radius: 10px;
+    border: none;
+    padding: 15px 40px 0px;
+    width: 40%;
+}
+
+/* The Modal (background) */
+.modal {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    /* Stay in place */
+    z-index: 1;
+    /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    /* Full width */
+    height: 100vh;
+    /* Full height */
+    overflow: hidden;
+    /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Black w/ opacity */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: height 1s ease;
+}
+
+/* Modal Content/Box */
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 10px;
+    width: 30%;
+    max-height: 70vh;
+    transition: margin-top 1s ease, opacity 5s ease;
+    /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button */
+.close {
+    color: #aaa;
+    font-size: 38px;
+    font-weight: bold;
+    position: absolute;
+    right: 20px;
+    top: 16px;
+    float: right;
+}
+
+.bla {
+    width: 90%;
+}
+
+.st {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#Descricao{
+    max-height: max-content;
+}
+
+#Descricao::-webkit-scrollbar {
+    width: 8px;
+}
+
+#Descricao::-webkit-scrollbar-thumb {
+    background-color: #aaa;
+    border-radius: 10px;
+}
