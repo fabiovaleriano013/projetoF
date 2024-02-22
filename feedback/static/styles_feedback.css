@@ -1,0 +1,268 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    transition: 2s ease, opacity;
+}
+
+body {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+:root {
+    --container: #483D3F;
+    --primary-color: #058ED9;
+    --secondary-color: #F4EBD9;
+    --complementary-color: #A39A92;
+    --contrast-color: #77685D;
+}
+
+main {
+    flex: 1;
+    align-items: center;
+}
+
+nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-direction: column;
+    height: 100%;
+    width: 64px;
+    border: none;
+    background: var(--primary-color);
+}
+
+
+nav a {
+    font-size: 40px;
+    color: #fff;
+    text-decoration: none;
+    padding: 20px;
+    text-align: center;
+}
+
+.cont {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow-y: hidden;
+    border: none;
+}
+
+/* Estilos de rolagem */
+.cont::-webkit-scrollbar {
+    width: 8px;
+}
+
+.cont::-webkit-scrollbar-thumb {
+    background-color: #aaa;
+    border-radius: 10px;
+}
+
+.toggle-nav{
+    opacity: 0;
+    pointer-events: none;
+}
+
+section {
+    opacity: 1;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+section.hide {
+    opacity: 0;
+    transform: translateY(-50px);
+    /* Ajuste o valor conforme necessário */
+    pointer-events: none;
+    /* Impede interações enquanto estiver oculto */
+    position: absolute;
+    /* Remove o espaço ocupado pela seção oculta */
+}
+
+#feedback {
+    font-style: var(--container);
+    border-radius: 10px;
+    border: none;
+    width: auto;
+    margin: 5vh 0 5vh 0;
+}
+
+#feedback form {
+    background-color: var(--complementary-color);
+}
+
+#feedback:target form h1 {
+    opacity: 0;
+    animation: 2s fadeIn forwards .5s;
+}
+
+#historic {
+    max-height: 70vh; /* Defina a altura máxima desejada */
+    overflow-y: auto;
+    width: 50%;
+}
+
+#historic .card2 {
+    cursor: pointer;
+    margin-bottom: 30px;
+    width: 450px;
+}
+
+.card2 {
+    background-color: var(--complementary-color);
+    font-style: var(--container);
+    border-radius: 10px;
+    border: none;
+    padding: 15px 40px 0px;
+}
+
+/* The Modal (background) */
+.modal {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    /* Stay in place */
+    z-index: 1;
+    /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    /* Full width */
+    height: 100vh;
+    /* Full height */
+    overflow: hidden;
+    /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Black w/ opacity */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: height 1s ease;
+}
+
+/* Modal Content/Box */
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 10px;
+    width: 30%;
+    max-height: 70vh;
+    transition: margin-top 1s ease, opacity 5s ease;
+    /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button */
+.close {
+    color: #aaa;
+    font-size: 38px;
+    font-weight: bold;
+    position: absolute;
+    right: 20px;
+    top: 16px;
+    float: right;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Estilos para telas menores (móveis) */
+@media only screen and (max-width: 768px) {
+    
+    main {
+        position: relative;
+    }
+    
+    nav {
+        opacity: 0;
+        width: 48px; /* Largura automática para ocupar o espaço disponível */
+        transform: translateX(-100%);
+        transition: opacity 1.5s ease, transform 1s ease; /* Adiciona transições para opacidade e transformação */
+    }
+
+    nav.open {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* Adicione um botão ou ícone para abrir a barra lateral em telas menores */
+    .toggle-nav {
+        opacity: 1;
+        font-size: 32px;
+        color: var(--primary-color);
+        cursor: pointer;
+        padding: 5px;
+        position: absolute;
+        pointer-events: all;
+    }
+
+    .toggle-nav.rotated {
+        transform: rotate(180deg);
+        margin-left: 48px;
+    }
+
+    .cont {
+        margin-left: -48px;
+    }
+
+    #feedback {
+        font-size: 0.95em;
+        width: 80%;
+    }
+
+    #feedback h1 {
+        font-size: 1.5em;
+    }
+
+    #historic {
+        overflow-y: auto;
+        width: 90%;
+    }
+    
+    #historic .card2 {
+        cursor: pointer;
+        margin-bottom: 30px;
+        width: 200px;
+    }
+    
+    .card2 {
+        padding: 15px 40px 0px 10px;
+    }
+
+    .card2 .h, .card2 .b {
+        flex-direction: column;
+    }
+
+    .card2 .h {
+        flex-direction: column;
+    }
+
+    .card2 .h p {
+        font-size: 0.9em;
+        margin-left: -20px;
+    }
+
+    .card2 .b p {
+        font-size: 1.2em;
+        text-align: center;
+    }
+
+    /* Modal Content/Box */
+    .modal-content {
+        width: 80%;
+        max-height: 50vh;
+        font-size: 1.1em;
+    }
+}
