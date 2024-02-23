@@ -56,6 +56,7 @@ class QuestaoAdmin(admin.ModelAdmin):
 
 admin.site.register(feedback)
 admin.site.register(area)
+admin.site.register(local)
 admin.site.register(status)
 
 admin.site.register(questionario, QuestionarioAdmin)

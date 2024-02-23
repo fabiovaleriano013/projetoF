@@ -11,6 +11,7 @@ def home(request):
     u_questionario = questionario.objects.get()
     quests = questao.objects.filter(questionario_id=u_questionario)
     areas = area.objects.all()
+    locais = local.objects.all()
     historic = feedback.objects.all()
     
     # historic = feedback.objects.filter(user_id=$_SESSION['id'])
@@ -21,48 +22,39 @@ def home(request):
         {'u_questionario': u_questionario,
          'quests': quests,
          'areas': areas,
+         'locais': locais,
          'historic': historic}
     )
 
-class GetFeedbacksView(View):
-    def get(self, request, *args, **kwargs):
-        try:
-            # Buscar todos os registros da tabela feedback ordenados pelo ID decrescente
-            feedbacks = feedback.objects.all().order_by('-id')
+def ldkjflksdf:
+obj = feedback.objects.get(id = id)
 
-            # Construir uma lista de dicionários com os dados
-            feedbacks_list = [
-                {
-                    'id': feedback.id,
-                    'Title': feedback.Title,
-                    'area': feedback.area.area,
-                    'Descricao': feedback.Descricao,
-                    'status': feedback.status.status,
-                    'Time': feedback.Time.strftime("%Y-%m-%d %H:%M:%S"),
-                }
-                for feedback in feedbacks
-            ]
-
-            # Retornar os dados em formato JSON
-            return JsonResponse({'feedbacks': feedbacks_list})
-
-        except Exception as e:
-            # Tratar exceções conforme necessário
-            return JsonResponse({'error': str(e)}, status=500)
-        
 def salvarAnswer(request):
-    try:    
-        # Crie um objeto questionario com o nome
-        questionario_id = request.POST.get("idQuestionario")
-        Questionario = questionario.objects.get(id=questionario_id)
+    try:
+        # Decodificar os arrays do JSON
+        array_pergunta = json.loads(request.POST.get("arrayP"))
 
-        titulo = request.POST.get("titulo")
-        Area = area.objects.get(id=request.POST.get("area"))
-        descricao = request.POST.get("descricao")
+        campos = ["titulo", "area", "local", "descricao"]
         Status = status.objects.get(status="Não Respondida")
         hora_atual = datetime.now()
 
-        fb = feedback(titulo = titulo, area = Area, descricao = descricao, status = Status, datahora = hora_atual)
+        fb = feedback(status = Status, datahora = hora_atual)
+        for a, c in zip(array_pergunta, campos):
+            if c == "area" or c == "local":
+            # Verifique se 'a' é um objeto 'area'
+                try:
+                    instance = area.objects.get(id=a) if c == "area" else local.objects.get(id=a)
+                    setattr(fb, c, instance)
+                except area.DoesNotExist:
+                    # Lide com o caso em que a área não existe
+                    print(f"A área com ID {a} não existe.")
+                except local.DoesNotExist:
+                    # Lide com o caso em que o local não existe
+                    print(f"O local com ID {a} não existe.")
+            else:
+                inf = request.POST.get(a)
+                setattr(fb, c, inf)
+
         fb.save()
 
         # Redirecione para a página de sucesso ou faça o que for necessário

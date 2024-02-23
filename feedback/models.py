@@ -38,6 +38,7 @@ class questao(models.Model):
     tipo = models.ForeignKey(tipo, on_delete=models.DO_NOTHING)
     questionario_id = models.ForeignKey(questionario, on_delete=models.DO_NOTHING)
     area = models.BooleanField(default=False, unique=False)
+    local = models.BooleanField(default=False, unique=False)
     # tipo, se a questão tem como resposta texto, multiplas respostas, seleção única, ou caixa de seleção
     # 1 = area
     # 2 = textarea
@@ -61,7 +62,17 @@ class area(models.Model):
 
     def __str__(self):
         return str(self.area)
+
+class local(models.Model):
+    local = models.CharField(max_length=50)
     
+    class Meta:
+        verbose_name = _("Local")
+        verbose_name_plural = _("Locais")
+
+    def __str__(self):
+        return str(self.local)
+        
 class status(models.Model):
     status = models.CharField(max_length=20)
     
@@ -75,6 +86,7 @@ class status(models.Model):
 class feedback(models.Model):
     titulo = models.CharField(max_length=255, null=True, verbose_name="Título")
     area = models.ForeignKey(area, on_delete=models.DO_NOTHING)
+    local = models.ForeignKey(local, on_delete=models.DO_NOTHING)
     descricao = models.TextField(max_length=255, null=True)
     status = models.ForeignKey(status, on_delete=models.DO_NOTHING)
     datahora = models.DateTimeField(null=True, auto_now_add=True)
