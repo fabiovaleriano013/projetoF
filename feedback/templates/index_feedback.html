@@ -6,19 +6,17 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <link rel="stylesheet" href="{% static 'styles_feedback.css' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 
+    <link rel="stylesheet" href="{% static 'styles_feedback.css' %}">
+
     <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
     <script src="https://unicons.iconscout.com/release/v4.0.8/script/monochrome/bundle.js" />
+
+    <title>Responder Questionário</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
-
-    <titulo>Responder Questionário</titulo>
     <style>
         input[type="radio"] {
             border: 2px solid black;
@@ -90,7 +88,7 @@
                 </div>
             </div>
 
-            <section id='feedback' class="form-container pt-2 pr-2 pl-2 pb-0">
+            <section id='feedback' class="form-container pt-2 pr-2 pl-2 pb-0 hide">
                 <form method="POST" action="{% url 'salvarAnswer' %}" class="p-4 rounded">
                     {% csrf_token %}
                     <div class="mb-1 d-flex flex-column align-items-center">
@@ -110,7 +108,6 @@
                             <option value="{{ area.id }}">{{ area.area }}</option>
                             {% endfor %}
                         </select>
-                        <input type="button" onclick="openMap()">Selecionar Local
                         {% elif quest.tipo.tipo == "Resposta Longa" %}
                         <label for="{{ quest.id }}" class="form-label bold">{{ quest.titulo }}</label>
                         <textarea id="{{ quest.id }}" name="descricao" maxlength="3000" rows="2" cols="50" class="form-control" 
@@ -142,12 +139,12 @@
                 {% endif %}
             </section>
 
-            <section id='historic' class="d-flex align-items-center flex-column hide">
+            <section id='historic' class="d-flex align-items-center flex-column">
                 {% if historic %}
                 {% for h in historic %}
                 <div class="d-flex flex-column card2"
                     onclick="showDetails('{{h.titulo}}', '{{h.datahora}}', '{{h.area.area}}', '{{h.status.status}}', '{{h.descricao}}')">
-                    <div class="h d-flex justify-content-between align-items-center">
+                    <div class="h d-flex justify-content-between">
                         <h3>{{ h.titulo }}</h3>
                         <p>{{ h.datahora|time:'H:i' }} - {{ h.datahora|date:'d/m/Y' }}</p>
                     </div>
@@ -176,7 +173,6 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         function showSection(section) {
             var div = document.querySelector('.cont');
@@ -252,27 +248,7 @@
             // Adicione ou remova a classe "rotated" para controlar a rotação do botão
             toggleNavButton.classList.toggle('rotated', nav.classList.contains('open'));
         }
-
-        var map;
-
-        function openMap() {
-            map = L.map('map').setView([0, 0], 2);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-
-            var marker = L.marker([0, 0], {
-                draggable: true,
-                title: 'Arraste para Selecionar o Local'
-            }).addTo(map);
-
-            marker.on('dragend', function (event) {
-                var markerLocation = marker.getLatLng();
-                alert('Latitude: ' + markerLocation.lat + ', Longitude: ' + markerLocation.lng);
-            });
-        }
     </script>
-
 </body>
 
 </html>
