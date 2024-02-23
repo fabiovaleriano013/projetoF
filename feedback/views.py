@@ -26,9 +26,6 @@ def home(request):
          'historic': historic}
     )
 
-def ldkjflksdf:
-obj = feedback.objects.get(id = id)
-
 def salvarAnswer(request):
     try:
         # Decodificar os arrays do JSON
