@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect
 from .models import *
 from django.db.models import Count
-from django.http import Http404, JsonResponse
+from django.http import Http404, JsonResponse, HttpResponseBadRequest
 from datetime import datetime
 import json
 from django.views import View
+
 
 # Create your views here.
 def home(request):
@@ -65,6 +66,20 @@ def salvarAnswer(request):
         error_message = f"Erro ao salvar o Feedback: {str(e)}"
         return render(request, "index_feedback.html", {"error_message": error_message})
 
+def get_feedback(request, id):
+    # request.is_ajax() is deprecated since django 3.1
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    if is_ajax:
+        if request.method == 'GET':
+            feedback_obj = feedback.objects.get(id=id)
+            context = {
+                'feedback_obj': feedback_obj
+            }
+            return JsonResponse(context)
+        return JsonResponse({'status': 'Invalid request'}, status=400)
+    else:
+        return HttpResponseBadRequest('Invalid request')
 
 def ver_form(request, link):
     try:

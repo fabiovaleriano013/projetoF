@@ -87,9 +87,6 @@
                         <p id="local"></p>
                         <h5>Descrição</h5>
                         <p id="descricao"></p>
-                        <h5>novov</h5>
-                        <p id="djflkkdsf"></p>
-                        {{ obj. novos altj}}
                         <h5>Status</h5>
                         <ul>
                             <li id="status"></li>
@@ -157,7 +154,7 @@
                     {% if historic %}
                     {% for h in historic %}
                     <div class="d-flex flex-column card2"
-                        onclick="showDetails('{{h.id}}')">
+                    onclick="showDetails('{{h.titulo}}', '{{h.datahora}}', '{{h.area}}', '{{h.local}}', '{{h.status}}', '{{h.descricao}}')">
                         <div class="h d-flex justify-content-between">
                             <h3>{{ h.titulo }}</h3>
                             <p>{{ h.datahora|time:'H:i' }} - {{ h.datahora|date:'d/m/Y' }}</p>
@@ -200,24 +197,35 @@
                 });
             }
 
-            function showDetails(id) {
-                obj = ajax(id)
-      var cor;
-      if (data.status == "Não Respondida") {
-        cor = 'blue';
-      } else if (data.status == "Em Andamento") {
-        cor = 'yellow';
-      } else if (data.status == "Não Resolvido") {
-        cor = 'red';
-      } else if (data.status == "Resolvido") {
-        cor = 'green';
-      }
-      document.getElementById('status').style.color = cor;
+            function showDetails(titulo, time, area, local, status, descricao) {
+            var modal = document.getElementById('Details');
+            modal.style.display = 'flex';
 
-      // Exibir o modal
-      var modal = document.getElementById('Details');
-      modal.style.display = 'flex';
-    }
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+
+            document.getElementById('titulo').textContent = titulo;
+            document.getElementById('datahora').textContent = time;
+            document.getElementById('area').textContent = area;
+            document.getElementById('local').textContent = local;
+            document.getElementById('status').textContent = status;
+            document.getElementById('descricao').textContent = descricao;
+
+            if (status == "Não Respondida") {
+                cor = 'blue';
+            } else if (status == "Em Andamento") {
+                cor = 'yellow';
+            } else if (status == "Não Resolvido") {
+                cor = 'red';
+            } else if (status == "Resolvido") {
+                cor = 'green';
+            }
+            document.getElementById('status').style.color = cor;
+        }
+            
             function fecharModal() {
                 var modal = document.getElementById('Details');
                 modal.style.display = 'none';
