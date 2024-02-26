@@ -30,36 +30,37 @@
     </head>
 
     <body class="bg-gradient">
-        <header class="d-flex flex-wrap justify-content-center py-3 border-bottom">
-            <div class="container-fluid d-flex justify-content-between align-items-center">
-                <ul class="navbar-nav">
+        <nav class="navbar navbar-expand-md navbar-dark bg-primary">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+                aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <a class="navbar-brand me-0 me-md-auto fw-bold" href="#">
+                Feedback
+            </a>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav mx-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/">
-                            <img src="{% static '/images/logo.png' %}" alt="mdo" width="35" height="35" class="">
-                        </a>
+                        <a onclick="showSection('feedback')"><i class="uil uil-file-search-alt"></i></a>
+                    </li>
+                    <li class="nav-item">
+                        <!--{% if usuairo.id == setor %}
+                            <a onclick="showSection('mail')"><i class="uil uil-envelope"></i></a>
+                        {% endif %}-->
+                    </li>
+                    <li class="nav-item">
+                        <a id="loadData" onclick="showSection('historic')"><i class="uil uil-copy-landscape"></i></a>
                     </li>
                 </ul>
-                <div class="d-flex gap-2">
-                    <div class="flex-fill">
-                        <style>
-                            .btn-custom {
-                                width: 100px;
-                            }
-                        </style>
-                        <button type="button" class="btn btn-warning btn-custom">
-                            <a class="nav-link">
-                                Admin
-                            </a>
-                        </button>
-                        {% if user.is_authenticated %}
-                        <button type="button" class="btn btn-danger btn-custom">
-                            <a class="nav-link">Sair</a>
-                        </button>
-                        {% endif %}
-                    </div>
+                <div class="col-12 col-md-2 text-md-end">
+                    {% if user.is_authenticated %}
+                        <a href="" class="btn btn-outline-light" role="button" id="logout">Logout</a>
+                    {% endif %}
                 </div>
             </div>
-        </header>
+        </div>
+    </nav>
         {% if error_message %}
         <script>
             alert("{{ error_message }}");
@@ -67,19 +68,11 @@
         {% endif %}
 
         <main class="d-flex">
-            <nav class="sidebar shaded-box">
-                <a onclick="showSection('feedback')"><i class="uil uil-file-search-alt"></i></a>
-                <!-- {% if usuairo.id == setor %}
-                    <a onclick="showSection('mail')"><i class="uil uil-envelope"></i></a>
-                {% endif %} -->
-                <a id="loadData" onclick="showSection('historic')"><i class="uil uil-copy-landscape"></i></a>
-            </nav>
-            <div class="toggle-nav" id="toggleNavButton" onclick="toggleNav()"><i class="uil uil-arrow-right"></i></div>
-            <div class='cont'>
                 <div id="Details" class="modal" style="display: none;">
                     <div class="modal-content">
                         <span class="close" onclick="fecharModal()">&times;</span>
                         <h1 id="titulo"></h1>
+                        <div class="informacoes">
                         <p id="datahora"></p>
                         <h5>Área</h5>
                         <p id="area"></p>
@@ -92,10 +85,11 @@
                             <li id="status"></li>
                         </ul>
                     </div>
+                    </div>
                 </div>
 
-                <section id='feedback' class="form-container pt-2 pr-2 pl-2 pb-0">
-                    <form method="POST" action="{% url 'salvarAnswer' %}" class="p-4 rounded" onsubmit="atualizarCamposHidden()">
+                <section id='feedback' class="form-container">
+                    <form method="POST" action="{% url 'salvarAnswer' %}" class="p-4" onsubmit="atualizarCamposHidden()">
                         {% csrf_token %}
                         <div class="mb-1 d-flex flex-column align-items-center">
                             <h1 class="mb-4">{{ u_questionario.nome }}</h1>
@@ -134,8 +128,6 @@
                     </form>
                 </section>
 
-                
-
                 <section id='mail' class="hide">
                     {% if mails %}
                     {% for mail in mails %}
@@ -150,13 +142,13 @@
                     {% endif %}
                 </section>
 
-                <section id='historic' class="d-flex align-items-center flex-column hide">
+                <section id='historic' class="flex-column align-items-center gap-3 hide">
                     {% if historic %}
                     {% for h in historic %}
                     <div class="d-flex flex-column card2"
                     onclick="showDetails('{{h.titulo}}', '{{h.datahora}}', '{{h.area}}', '{{h.local}}', '{{h.status}}', '{{h.descricao}}')">
                         <div class="h d-flex justify-content-between">
-                            <h3>{{ h.titulo }}</h3>
+                            <h4>{{ h.titulo }}</h4>
                             <p>{{ h.datahora|time:'H:i' }} - {{ h.datahora|date:'d/m/Y' }}</p>
                         </div>
                         <div class="b d-flex justify-content-between">
@@ -171,7 +163,6 @@
                     <h1>Você ainda não enviou nenhum feedback</h1>
                     {% endif %}
                 </section>
-            </div>
         </main>
 
 
@@ -186,7 +177,7 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
         <script>
             function showSection(section) {
-                var div = document.querySelector('.cont');
+                var div = document.querySelector('main');
                 var sections = div.querySelectorAll('section');
                 sections.forEach(function (sectionElement) {
                     if (sectionElement.id === section) {
@@ -251,15 +242,6 @@
             }
 
             var contDiv = document.querySelector('.cont');
-
-            function toggleNav() {
-                var nav = document.querySelector('.sidebar');
-                nav.classList.toggle('open'); // Adiciona ou remove a classe "open"
-
-                var toggleNavButton = document.getElementById('toggleNavButton');
-                // Adicione ou remova a classe "rotated" para controlar a rotação do botão
-                toggleNavButton.classList.toggle('rotated', nav.classList.contains('open'));
-            }
 
             var arrayP = [];
 

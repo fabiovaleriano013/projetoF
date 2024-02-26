@@ -14,14 +14,6 @@ class QuestaoInline(nested_admin.NestedStackedInline):
     model = questao
     extra = 1
 
-def link_form(obj):
-    return format_html(
-            '<a style="color: lightblue; text-decoration: underline;" href="{}" target="_blank">'
-            'Visualizar Questionário'
-            '</a>',
-            reverse('ver_form', args=[obj.link]),
-        )
-
 def link_resposta(obj):
     # return f'http://127.0.0.1:8000/questionario/{obj.link_resposta}'
     return format_html(
@@ -32,7 +24,7 @@ def link_resposta(obj):
         )
 
 class QuestionarioAdmin(nested_admin.NestedModelAdmin):
-    list_display = ('id', 'nome', link_form, link_resposta)
+    list_display = ('id', 'nome', link_resposta)
     list_editable = ('nome',)
     exclude = ('link', 'link_resposta')
     
