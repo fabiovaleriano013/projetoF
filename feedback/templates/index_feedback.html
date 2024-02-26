@@ -45,9 +45,7 @@
                         <a onclick="showSection('feedback')"><i class="uil uil-file-search-alt"></i></a>
                     </li>
                     <li class="nav-item">
-                        <!--{% if usuairo.id == setor %}
-                            <a onclick="showSection('mail')"><i class="uil uil-envelope"></i></a>
-                        {% endif %}-->
+                        <a onclick="showSection('mail')"><i class="uil uil-envelope"></i></a>
                     </li>
                     <li class="nav-item">
                         <a id="loadData" onclick="showSection('historic')"><i class="uil uil-copy-landscape"></i></a>
@@ -68,10 +66,11 @@
         {% endif %}
 
         <main class="d-flex">
+            {% if obj %}
                 <div id="Details" class="modal" style="display: none;">
                     <div class="modal-content">
                         <span class="close" onclick="fecharModal()">&times;</span>
-                        <h1 id="titulo"></h1>
+                        <h1 id="titulo">{{ obj.titulo }}</h1>
                         <div class="informacoes">
                         <p id="datahora"></p>
                         <h5>Área</h5>
@@ -87,6 +86,7 @@
                     </div>
                     </div>
                 </div>
+            {% endif %}
 
                 <section id='feedback' class="form-container">
                     <form method="POST" action="{% url 'salvarAnswer' %}" class="p-4" onsubmit="atualizarCamposHidden()">
@@ -129,12 +129,26 @@
                 </section>
 
                 <section id='mail' class="hide">
+                    <select name="area" id="area">
+                        <option value=""></option>
+                        {% for area in areas %}
+                            <option value="{{ area.id }}">{{ area.area }}</option>
+                        {% endfor %}
+                    </select>
                     {% if mails %}
                     {% for mail in mails %}
-                    <div class="form-check">
-                        <input type="checkbox" name="{{ quest.id }}" value="{{ alternative.titulo }}"
-                            id="alt_{{ alternative.id }}" class="form-check-input">
-                        <label for="alt_{{ alternative.id }}" class="form-check-label">{{ alternative.titulo}}</label>
+                    <div class="d-flex flex-column card2"
+                    onclick="showDetails('{{h.titulo}}', '{{h.datahora}}', '{{h.area}}', '{{h.local}}', '{{h.status}}', '{{h.descricao}}')">
+                        <div class="h d-flex justify-content-between">
+                            <h4>{{ h.titulo }}</h4>
+                            <p>{{ h.datahora|time:'H:i' }} - {{ h.datahora|date:'d/m/Y' }}</p>
+                        </div>
+                        <div class="b d-flex justify-content-between">
+                            <p>{{ h.area }}</p>
+                            <ul>
+                                <li class="status">{{ h.status }}</li>
+                            </ul>
+                        </div>
                     </div>
                     {% endfor %}
                     {% else %}
@@ -146,7 +160,7 @@
                     {% if historic %}
                     {% for h in historic %}
                     <div class="d-flex flex-column card2"
-                    onclick="showDetails('{{h.titulo}}', '{{h.datahora}}', '{{h.area}}', '{{h.local}}', '{{h.status}}', '{{h.descricao}}')">
+                    onclick="getFeedback('{{h.id}}')">
                         <div class="h d-flex justify-content-between">
                             <h4>{{ h.titulo }}</h4>
                             <p>{{ h.datahora|time:'H:i' }} - {{ h.datahora|date:'d/m/Y' }}</p>
@@ -187,6 +201,60 @@
                     }
                 });
             }
+
+            // Função para obter feedback pelo ID
+function getFeedback(id) {
+    fetch(`/feedback/get_feedback/${id}/`)
+        .then(response => {
+            if (response.ok) {
+                throw new Error(`Erro HTTP! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(obj => {
+            // Manipular os dados do feedback recebidos
+            console.log(obj);
+            // Exemplo: Atualizar o DOM com os dados do feedback
+        })
+        .catch(error => {
+            console.error('Erro ao obter feedback:', error);
+        });
+}
+
+            function obterFeedbackPorId(id) {
+    // URL do seu endpoint no backend para obter o feedback por ID
+    const url = `/feedback/get_feedback/${id}/`;
+
+    // Opções da requisição (pode incluir headers, método HTTP, etc.)
+    const options = {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            // Adicione outros headers conforme necessário
+        },
+    };
+
+    // Realiza a requisição usando fetch
+    fetch(url, options)
+        .then(response => {
+            // Verifica se a resposta está OK (código 200)
+            if (!response.ok) {
+                throw new Error(`Erro na requisição: ${response.status}`);
+            }
+            // Converte a resposta para JSON e a retorna
+            return response.json();
+        })
+        .then(data => {
+            // Manipula os dados recebidos, por exemplo, exibe no console
+            console.log('Objeto de feedback:', data);
+            // Você pode fazer mais manipulações ou atualizações na interface do usuário aqui
+        })
+        .catch(error => {
+            console.error('Erro na requisição 2:', error);
+            // Trate o erro conforme necessário (por exemplo, exiba uma mensagem de erro na interface do usuário)
+        });
+}
+
 
             function showDetails(titulo, time, area, local, status, descricao) {
             var modal = document.getElementById('Details');

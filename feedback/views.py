@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.db.models import Count
 from django.http import Http404, JsonResponse, HttpResponseBadRequest
@@ -80,6 +80,13 @@ def get_feedback(request, id):
         return JsonResponse({'status': 'Invalid request'}, status=400)
     else:
         return HttpResponseBadRequest('Invalid request')
+
+def get_feedback(request, id):
+    # Obtém o objeto Feedback com base no ID
+    obj = get_object_or_404(feedback, id=id)
+
+    # Retorna a resposta JSON com os dados do feedback
+    return JsonResponse(obj)
 
 def ver_form(request, link):
     try:
