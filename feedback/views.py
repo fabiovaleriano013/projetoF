@@ -67,26 +67,16 @@ def salvarAnswer(request):
         return render(request, "index_feedback.html", {"error_message": error_message})
 
 def get_feedback(request, id):
-    # request.is_ajax() is deprecated since django 3.1
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
     if is_ajax:
         if request.method == 'GET':
             feedback_obj = feedback.objects.get(id=id)
-            context = {
-                'feedback_obj': feedback_obj
-            }
-            return JsonResponse(context)
-        return JsonResponse({'status': 'Invalid request'}, status=400)
-    else:
-        return HttpResponseBadRequest('Invalid request')
-
-def get_feedback(request, id):
-    # Obtém o objeto Feedback com base no ID
-    obj = get_object_or_404(feedback, id=id)
-
-    # Retorna a resposta JSON com os dados do feedback
-    return JsonResponse(obj)
+            f_obj_serializers = serializers.serialize('json', feedback_obj)
+            return JsonResponse(f_obj_serializers, safe=False)
+        else:
+            return JsonResponse({'status': 'error', 'message': 'errado'})
+    return JsonResponse({'message': 'validação errada is ajax'})
 
 def ver_form(request, link):
     try:

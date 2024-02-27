@@ -135,6 +135,7 @@
                             <option value="{{ area.id }}">{{ area.area }}</option>
                         {% endfor %}
                     </select>
+                    <div class="registros" data-url="{% url 'get_feedback' %}">
                     {% if mails %}
                     {% for mail in mails %}
                     <div class="d-flex flex-column card2"
@@ -154,6 +155,7 @@
                     {% else %}
                     <h1>Você ainda não recebeu nenhum feedback</h1>
                     {% endif %}
+                </div>
                 </section>
 
                 <section id='historic' class="flex-column align-items-center gap-3 hide">
@@ -186,8 +188,8 @@
             integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
             crossorigin="anonymous"></script>
         <!-- Bootstrap JavaScript and dependencies -->
-        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
         <script>
             function showSection(section) {
@@ -202,60 +204,12 @@
                 });
             }
 
-            // Função para obter feedback pelo ID
-function getFeedback(id) {
-    fetch(`/feedback/get_feedback/${id}/`)
-        .then(response => {
-            if (response.ok) {
-                throw new Error(`Erro HTTP! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(obj => {
-            // Manipular os dados do feedback recebidos
-            console.log(obj);
-            // Exemplo: Atualizar o DOM com os dados do feedback
-        })
-        .catch(error => {
-            console.error('Erro ao obter feedback:', error);
-        });
-}
-
-            function obterFeedbackPorId(id) {
-    // URL do seu endpoint no backend para obter o feedback por ID
-    const url = `/feedback/get_feedback/${id}/`;
-
-    // Opções da requisição (pode incluir headers, método HTTP, etc.)
-    const options = {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            // Adicione outros headers conforme necessário
-        },
-    };
-
-    // Realiza a requisição usando fetch
-    fetch(url, options)
-        .then(response => {
-            // Verifica se a resposta está OK (código 200)
-            if (!response.ok) {
-                throw new Error(`Erro na requisição: ${response.status}`);
-            }
-            // Converte a resposta para JSON e a retorna
-            return response.json();
-        })
-        .then(data => {
-            // Manipula os dados recebidos, por exemplo, exibe no console
-            console.log('Objeto de feedback:', data);
-            // Você pode fazer mais manipulações ou atualizações na interface do usuário aqui
-        })
-        .catch(error => {
-            console.error('Erro na requisição 2:', error);
-            // Trate o erro conforme necessário (por exemplo, exiba uma mensagem de erro na interface do usuário)
-        });
-}
-
-
+            $(select).on('click', function(){
+                $.ajax({
+                    url: $('.cont')
+                })
+            })
+            
             function showDetails(titulo, time, area, local, status, descricao) {
             var modal = document.getElementById('Details');
             modal.style.display = 'flex';
