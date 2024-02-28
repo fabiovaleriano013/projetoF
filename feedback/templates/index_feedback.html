@@ -14,12 +14,6 @@
         <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
 
         <script src="https://unicons.iconscout.com/release/v4.0.8/script/monochrome/bundle.js"/>
-        
-        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
         <title>Responder Questionário</title>
         <style>
@@ -129,33 +123,37 @@
                 </section>
 
                 <section id='mail' class="hide">
-                    <select name="area" id="area">
-                        <option value=""></option>
-                        {% for area in areas %}
-                            <option value="{{ area.id }}">{{ area.area }}</option>
-                        {% endfor %}
-                    </select>
-                    <div class="registros" data-url="{% url 'get_feedback' %}">
                     {% if mails %}
-                    {% for mail in mails %}
-                    <div class="d-flex flex-column card2"
-                    onclick="showDetails('{{h.titulo}}', '{{h.datahora}}', '{{h.area}}', '{{h.local}}', '{{h.status}}', '{{h.descricao}}')">
-                        <div class="h d-flex justify-content-between">
-                            <h4>{{ h.titulo }}</h4>
-                            <p>{{ h.datahora|time:'H:i' }} - {{ h.datahora|date:'d/m/Y' }}</p>
+                        <select name="area" id="area">
+                            {% for area in areas %}
+                                <option value="{{ area.id }}">{{ area.area }}</option>
+                            {% endfor %}
+                        </select>
+
+
+                        <div id="feedback-list">
+                            {% for a in feedbacks %}
+                            <div class="d-flex flex-column card2"
+                            // onclick="showDetails('{{h.titulo}}', '{{h.datahora}}', '{{h.area}}', '{{h.local}}', '{{h.status}}', '{{h.descricao}}')"
+                            >
+                                <div class="h d-flex justify-content-between">
+                                    <h4>{{ a.titulo }}</h4>
+                                    <p>{{ a.datahora|time:'H:i' }} - {{ a.datahora|date:'d/m/Y' }}</p>
+                                </div>
+                                <div class="b d-flex justify-content-between">
+                                    <p>{{ a.area }}</p>
+                                    <ul>
+                                        <li class="st">{{ a.status }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            {% endfor %}
                         </div>
-                        <div class="b d-flex justify-content-between">
-                            <p>{{ h.area }}</p>
-                            <ul>
-                                <li class="status">{{ h.status }}</li>
-                            </ul>
-                        </div>
-                    </div>
-                    {% endfor %}
                     {% else %}
-                    <h1>Você ainda não recebeu nenhum feedback</h1>
+                            <h1>Você ainda não recebeu nenhum feedback</h1>
+                        </div>
                     {% endif %}
-                </div>
+                        
                 </section>
 
                 <section id='historic' class="flex-column align-items-center gap-3 hide">
@@ -204,11 +202,31 @@
                 });
             }
 
-            $(select).on('click', function(){
-                $.ajax({
-                    url: $('.cont')
-                })
-            })
+            $(document).ready(function() {
+            // Quando a página carrega, obtemos as tarefas usando AJAX
+            $('#area').change(function () {
+                var selectedId = $(this).val();
+
+                // Verifique se um ID de tarefa foi selecionado
+                if (selectedId) {
+                    $.ajax({
+                        url: '/fed/get_feedback/' + selectedId + '/',
+                        type: 'GET',
+                        success: function(data) {
+                            $('#feedback-list').empty();
+
+                            // Adicionamos as tarefas à lista
+                            console.log(feedbacks)
+                        },
+                        error: function (error) {
+                            console.log('Erro ao carregar tarefas:', error);
+                        }
+                    });
+                } else {
+                    console.log("lkjljfdf")
+                }
+            });
+        });
             
             function showDetails(titulo, time, area, local, status, descricao) {
             var modal = document.getElementById('Details');
