@@ -1,7 +1,6 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from .models import *
 from django.db.models import Count
-from django.views.decorators.http import require_GET
 from django.http import Http404, JsonResponse, HttpResponseBadRequest
 from datetime import datetime
 import json
@@ -67,14 +66,20 @@ def salvarAnswer(request):
         error_message = f"Erro ao salvar o Feedback: {str(e)}"
         return render(request, "index_feedback.html", {"error_message": error_message})
 
-@require_GET
 def get_feedback(request, id):
-    try:
-        feedbacks = feedback.objects.get(id=id)
-        data = {'feedbacks': feedbacks}
-        return JsonResponse(data)
-    except feedback.DoesNotExist:
-        return JsonResponse({'error': 'Tarefa não encontrada'})
+    # request.is_ajax() is deprecated since django 3.1
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    if is_ajax:
+        if request.method == 'GET':
+            feedback_obj = feedback.objects.get(id=id)
+            context = {
+                'feedback_obj': feedback_obj
+            }
+            return JsonResponse(context)
+        return JsonResponse({'status': 'Invalid request'}, status=400)
+    else:
+        return HttpResponseBadRequest('Invalid request')
 
 def ver_form(request, link):
     try:
