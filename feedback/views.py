@@ -55,8 +55,13 @@ def salvarAnswer(request):
 
         fb.save()
 
-        # Redirecione para a página de sucesso ou faça o que for necessário
-        return redirect(home)
+        rota = request.POST.get("permissao")
+
+        if rota == "adm":
+            # Redirecione para a página de sucesso ou faça o que for necessário
+            return redirect(ver_form)
+        elif rota == "user":
+            return redirect(home)
 
     except Exception as e:
         # Em caso de erro, redirecione para uma página de erro
@@ -67,37 +72,30 @@ def salvarAnswer(request):
         return render(request, "index_feedback.html", {"error_message": error_message})
 
 def get_feedback(request, id):
-    # request.is_ajax() is deprecated since django 3.1
-    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    # Faça a consulta no banco de dados
+    feedback_list = feedback.objects.filter(area=id)
 
-    if is_ajax:
-        if request.method == 'GET':
-            feedback_obj = feedback.objects.get(id=id)
-            context = {
-                'feedback_obj': feedback_obj
-            }
-            return JsonResponse(context)
-        return JsonResponse({'status': 'Invalid request'}, status=400)
+    # Retorne os dados como JSON
+    return JsonResponse(feedback_list, safe=False)
+
+def ver_form(request, cod):
+    u_questionario = questionario.objects.get()
+    if cod == 0:
+        mails = feedback.objects.all()
     else:
-        return HttpResponseBadRequest('Invalid request')
-
-def ver_form(request, link):
-    try:
-        # Tente buscar pelo campo 'link'
-        u_questionario = questionario.objects.get(link=link)
-    except:
-        u_questionario = questionario.objects.get(link_resposta=link)
+        mails = feedback.objects.filter(area = cod)
     quests = questao.objects.filter(questionario_id=u_questionario)
     areas = area.objects.all()
-    historic = feedback.objects.all()
+    locais = local.objects.all()
     
     # historic = feedback.objects.filter(user_id=$_SESSION['id'])
     
     return render(
         request,
-        "index_feedback.html",
+        "pagina2.html",
         {'u_questionario': u_questionario,
          'quests': quests,
          'areas': areas,
-         'historic': historic}
+         'locais': locais,
+         'mails': mails}
     )

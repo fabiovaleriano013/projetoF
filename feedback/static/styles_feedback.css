@@ -74,6 +74,16 @@ section.hide {
     background-color: var(--complementary-color);
 }
 
+#mail {
+    display: flex;
+    flex-direction: column;
+}
+
+#mail #feedback-list {
+    display: flex;
+    flex-direction: column;
+}
+
 #historic {
     width: 100%;
 }
