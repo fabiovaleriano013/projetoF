@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from .models import *
 from django.db.models import Count
 from django.http import Http404, JsonResponse, HttpResponseBadRequest
@@ -30,28 +31,35 @@ def home(request):
 def salvarAnswer(request):
     try:
         # Decodificar os arrays do JSON
-        array_pergunta = json.loads(request.POST.get("arrayP"))
+        # array_pergunta = json.loads(request.POST.get("arrayP"))
 
-        campos = ["titulo", "area", "local", "descricao"]
+        # campos = ["titulo", "area", "local", "descricao"]
         Status = status.objects.get(status="Não Respondida")
         hora_atual = datetime.now()
+        a = area.objects.get(id=request.POST.get("area"))
+        b = local.objects.get(id=request.POST.get("local"))
+        c = request.POST.get("titulo")
+        d = request.POST.get("descricao")
 
         fb = feedback(status = Status, datahora = hora_atual)
-        for a, c in zip(array_pergunta, campos):
-            if c == "area" or c == "local":
-            # Verifique se 'a' é um objeto 'area'
-                try:
-                    instance = area.objects.get(id=a) if c == "area" else local.objects.get(id=a)
-                    setattr(fb, c, instance)
-                except area.DoesNotExist:
-                    # Lide com o caso em que a área não existe
-                    print(f"A área com ID {a} não existe.")
-                except local.DoesNotExist:
-                    # Lide com o caso em que o local não existe
-                    print(f"O local com ID {a} não existe.")
-            else:
-                inf = request.POST.get(a)
-                setattr(fb, c, inf)
+        # for a, c in zip(array_pergunta, campos):
+        #     if c == "area" or c == "local":
+        #     # Verifique se 'a' é um objeto 'area'
+        #         try:
+        #             try:
+        #                 instance = area.objects.get(id=a)
+        #             except:
+        #                 instance = local.objects.get(id=a)
+        #             setattr(fb, c, instance)
+        #         except area.DoesNotExist:
+        #             # Lide com o caso em que a área não existe
+        #             print(f"A área com ID {a} não existe.")
+        #         except local.DoesNotExist:
+        #             # Lide com o caso em que o local não existe
+        #             print(f"O local com ID {a} não existe.")
+        #     else:
+        #         inf = request.POST.get(a)
+        #         setattr(fb, c, inf)
 
         fb.save()
 
@@ -59,7 +67,7 @@ def salvarAnswer(request):
 
         if rota == "adm":
             # Redirecione para a página de sucesso ou faça o que for necessário
-            return redirect(ver_form)
+            return redirect(reverse('ver_form', args=[0]))
         elif rota == "user":
             return redirect(home)
 
@@ -87,6 +95,7 @@ def ver_form(request, cod):
     quests = questao.objects.filter(questionario_id=u_questionario)
     areas = area.objects.all()
     locais = local.objects.all()
+    historic = feedback.objects.all()
     
     # historic = feedback.objects.filter(user_id=$_SESSION['id'])
     
@@ -97,5 +106,6 @@ def ver_form(request, cod):
          'quests': quests,
          'areas': areas,
          'locais': locais,
-         'mails': mails}
+         'mails': mails,
+         'historic': historic}
     )
