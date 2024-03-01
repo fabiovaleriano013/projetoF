@@ -47,10 +47,11 @@ class QuestaoAdmin(admin.ModelAdmin):
     list_display = ('id', 'titulo')
 
 class ComentarioAdmin(admin.ModelAdmin):
-    list_display = ('comentario', 'datahora', 'feedback_id')
+    list_display = ('id', 'comentario', 'datahora', 'feedback_id')
 
 class ComentarioInline(admin.TabularInline):  # Use admin.StackedInline se preferir exibição empilhada
-    list_display = ('comentario', 'descricao', 'datahora')
+    fields = ('comentario', 'datahora')
+    readonly_fields = ('datahora',)  # Adicione 'datahora' aqui
     model = comentario
     extra = 1  # Número de formulários em branco exibidos para novos Comentarios
 

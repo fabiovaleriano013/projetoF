@@ -68,7 +68,7 @@
     <main class="d-flex">
             <div id="Details" class="modal" style="display: none;">
                 <div class="modal-content">
-                    <span class="close" onclick="fecharModal()">&times;</span>
+                    <span class="close" onclick="fecharModal('Details')">&times;</span>
                     <h1 id="titulo"></h1>
                     <div class="informacoes">
                     <p id="datahora"></p>
@@ -88,7 +88,7 @@
 
             <div id="Details2" class="modal2" style="display: none;">
                 <div class="modal-content2">
-                    <span class="close" onclick="fecharModal()">&times;</span>
+                    <span class="close" onclick="fecharModal('Details2')">&times;</span>
                     <h1 id="titulo2"></h1>
                     <div class="informacoes">
                         <p id="datahora2"></p>
@@ -102,21 +102,21 @@
                         <ul>
                             <li id="status2"></li>
                         </ul>
-                    </div>
-                    <div id="comentarios_container">
-                    </div>
-                    <form method="post" action="{% url 'salvar_comentario' %}">
-                    {% csrf_token %}
-                        <div class="comentario">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text bg-secondary text-light rounded-circle" id="basic-addon1">&#9786;</span>
-                                <!-- <img src="caminho/para/a/imagem.jpg" alt="Foto da pessoa" class="img-fluid" /> -->
-                                <input type="text" class="form-control rounded-left" name="texto" id="texto" placeholder="Digite seu comentário" aria-label="Digite seu comentário" aria-describedby="button-addon2">
-                                <input type="hidden" name="feedback_id" id="feedback_id">
-                                <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Enviar</button>
-                            </div>
+                        <div id="comentarios_container" class="d-flex flex-column gap-2">
                         </div>
-                    </form>
+                        <form method="post" action="{% url 'salvar_comentario' %}">
+                        {% csrf_token %}
+                            <div class="comentario">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text bg-secondary text-light rounded-circle" id="basic-addon1">&#9786;</span>
+                                    <!-- <img src="caminho/para/a/imagem.jpg" alt="Foto da pessoa" class="img-fluid" /> -->
+                                    <input type="text" class="form-control rounded-left" name="texto" id="texto" placeholder="Digite seu comentário" aria-label="Digite seu comentário" aria-describedby="button-addon2">
+                                    <input type="hidden" name="feedback_id" id="feedback_id">
+                                    <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Enviar</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
 
@@ -297,9 +297,24 @@
                 // Limpe os comentários_container
                 $('#comentarios_container').empty();
 
-                // Adicione os comentários à div
-                data.forEach(function (comentario) {
-                    $('#comentarios_container').append('<p>' + comentario.comentario + ' em ' + comentario.datahora + '</p>');
+                // Converta a string JSON de volta para um objeto JavaScript
+                var comentarios = JSON.parse(data);
+
+                // Mapeie os objetos para um novo array contendo apenas os campos desejados
+                var comentariosFiltrados = comentarios.map(function (comentario) {
+                    return {
+                        comentario: comentario.fields.comentario,
+                        datahora: comentario.fields.datahora,
+                    };
+                });
+
+                // Adicione os comentários filtrados à div
+                comentariosFiltrados.forEach(function (comentario) {
+                    var datahora = new Date(comentario.datahora);
+                    var divComentario = $('<div>').addClass('coment'); // Cria uma nova div para cada comentário
+                    divComentario.append('<p id="comentario_texto">' + comentario.comentario + '</p>'); // Adiciona o comentário à div
+                    divComentario.append('<p id="datahora">' + datahora.toLocaleString() + '</p>'); // Adiciona a hora à div
+                    $('#comentarios_container').append(divComentario); // Adiciona a div à div principal
                 });
             },
             error: function (error) {
@@ -327,8 +342,8 @@
         window.location.href = '/salvarcomentario?texto=' + encodeURIComponent(comentario);
     });
         
-        function fecharModal() {
-            var modal = document.getElementById('Details');
+        function fecharModal(modal) {
+            var modal = document.getElementById(modal);
             modal.style.display = 'none';
         }
 

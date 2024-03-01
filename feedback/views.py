@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from .models import *
 from django.db.models import Count
+from django.core.serializers import serialize
 from django.http import Http404, JsonResponse, HttpResponse, HttpResponseBadRequest
 from datetime import datetime
 import json
@@ -119,4 +120,5 @@ def salvar_comentario(request):
 
 def obter_comentarios(request, id):
     comentarios = comentario.objects.filter(feedback_id=id)
-    return JsonResponse(list(comentarios), safe=False)
+    comentarios_serializados = serialize('json', comentarios)
+    return JsonResponse(comentarios_serializados, safe=False)

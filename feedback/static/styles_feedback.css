@@ -189,10 +189,56 @@ section.hide {
     width: 80%;
     max-height: 90vh;
     transition: margin-top 1s ease, opacity 5s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
     /* Could be more or less, depending on screen size */
 }
 
-.modal-content2 .informacoes
+.modal-content2 .informacoes {
+    overflow-y: auto;
+}
+
+/* Estilos de rolagem */
+.modal-content2 .informacoes::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content2 .informacoes::-webkit-scrollbar-thumb {
+    background-color: #aaa;
+    border-radius: 10px;
+}
+
+#comentarios_container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.coment {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: center;
+    width: 80%;
+    position: relative;
+}
+
+#comentario_texto{
+    background-color: var(--complementary-color);
+    border-radius: 10px;
+    padding: 0.6% 2% 1% 1%;
+}
+
+#datahora {
+    position: absolute;
+    top: 0;
+    right: 5px;
+    float: right;
+    font-size: smaller;
+}
 
 /* The Close Button */
 .close {
