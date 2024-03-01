@@ -99,9 +99,21 @@ class feedback(models.Model):
     def __str__(self):
         return self.titulo
 
+
+class usuario(models.Model):
+    nome = models.CharField(max_length=255)
+    email = models.CharField(max_length=255)
+
+    class Meta:
+        verbose_name = _("Usuário")
+        verbose_name_plural = _("Usuários")
+
+    def __str__(self):
+        return self.nome
+
 class comentario(models.Model):
     comentario = models.TextField(null=True, verbose_name="Comentário")
-    # usuario = models.CharField(max_length=50)
+    usuario = models.ForeignKey(usuario, on_delete=models.DO_NOTHING)
     datahora = models.DateTimeField(null=True, auto_now_add=True)
     feedback_id = models.ForeignKey(feedback, on_delete=models.CASCADE)
 

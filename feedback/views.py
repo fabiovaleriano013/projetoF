@@ -107,9 +107,11 @@ def salvar_comentario(request):
     if request.method == 'POST':
         texto_comentario = request.POST.get('texto', '')
         feedback_id = feedback.objects.get(id=request.POST.get('feedback_id', ''))
+        user = usuario.objects.get(nome=request.POST.get('usuario', ''))
+
 
         # Crie o objeto de comentário e salve no banco de dados
-        novo_comentario = comentario(comentario=texto_comentario, feedback_id=feedback_id)
+        novo_comentario = comentario(comentario=texto_comentario, usuario=user, feedback_id=feedback_id)
         novo_comentario.save()
 
         # Redirecione para a página desejada após salvar o comentário

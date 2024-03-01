@@ -50,7 +50,7 @@ class ComentarioAdmin(admin.ModelAdmin):
     list_display = ('id', 'comentario', 'datahora', 'feedback_id')
 
 class ComentarioInline(admin.TabularInline):  # Use admin.StackedInline se preferir exibição empilhada
-    fields = ('comentario', 'datahora')
+    fields = ('comentario', 'usuario', 'datahora')
     readonly_fields = ('datahora',)  # Adicione 'datahora' aqui
     model = comentario
     extra = 1  # Número de formulários em branco exibidos para novos Comentarios
@@ -59,11 +59,15 @@ class FeedbackAdmin(admin.ModelAdmin):
     list_display = ('titulo', 'descricao', 'datahora')
     inlines = [ComentarioInline]
 
+class UsuarioAdmin(admin.ModelAdmin):
+    list_display = ('id', 'nome', 'email')
+
 admin.site.register(feedback, FeedbackAdmin)
 admin.site.register(area)
 admin.site.register(local)
 admin.site.register(status)
 admin.site.register(comentario, ComentarioAdmin)
+admin.site.register(usuario, UsuarioAdmin)
 
 admin.site.register(questionario, QuestionarioAdmin)
 admin.site.register(tipo)

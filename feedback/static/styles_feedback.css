@@ -240,6 +240,14 @@ section.hide {
     font-size: smaller;
 }
 
+#tipo_usuario {
+    position: absolute;
+    bottom: 0;
+    right: 5px;
+    float: right;
+    font-size: smaller;
+}
+
 /* The Close Button */
 .close {
     color: #aaa;

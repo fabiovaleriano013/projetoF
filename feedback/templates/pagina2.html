@@ -66,26 +66,6 @@
     {% endif %}
 
     <main class="d-flex">
-            <div id="Details" class="modal" style="display: none;">
-                <div class="modal-content">
-                    <span class="close" onclick="fecharModal('Details')">&times;</span>
-                    <h1 id="titulo"></h1>
-                    <div class="informacoes">
-                    <p id="datahora"></p>
-                    <h5>Área</h5>
-                    <p id="area"></p>
-                    <h5>Local</h5>
-                    <p id="local"></p>
-                    <h5>Descrição</h5>
-                    <p id="descricao"></p>
-                    <h5>Status</h5>
-                    <ul>
-                        <li id="status"></li>
-                    </ul>
-                </div>
-                </div>
-            </div>
-
             <div id="Details2" class="modal2" style="display: none;">
                 <div class="modal-content2">
                     <span class="close" onclick="fecharModal('Details2')">&times;</span>
@@ -102,7 +82,7 @@
                         <ul>
                             <li id="status2"></li>
                         </ul>
-                        <div id="comentarios_container" class="d-flex flex-column gap-2">
+                        <div id="comentarios_container2" class="d-flex flex-column gap-2">
                         </div>
                         <form method="post" action="{% url 'salvar_comentario' %}">
                         {% csrf_token %}
@@ -111,7 +91,8 @@
                                     <span class="input-group-text bg-secondary text-light rounded-circle" id="basic-addon1">&#9786;</span>
                                     <!-- <img src="caminho/para/a/imagem.jpg" alt="Foto da pessoa" class="img-fluid" /> -->
                                     <input type="text" class="form-control rounded-left" name="texto" id="texto" placeholder="Digite seu comentário" aria-label="Digite seu comentário" aria-describedby="button-addon2">
-                                    <input type="hidden" name="feedback_id" id="feedback_id">
+                                    <input type="hidden" name="feedback_id" id="feedback_id2">
+                                    <input type="hidden" name="usuario" id="usuario" value="adm">
                                     <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Enviar</button>
                                 </div>
                             </div>
@@ -154,7 +135,7 @@
                     </div>
                     {% endfor %}
                     <input type="hidden" name="arrayP" id="arrayP" value="">
-                    <input type="hidden" name="permissao" id="permissao" value="adm">
+                    <input type="hidden" name="log" id="log" value="adm">
                     <div class="d-flex flex-column align-items-center">
                         <button type="submit" class="btn btn-primary">Enviar Resposta</button>
                     </div>
@@ -171,7 +152,7 @@
                         <div id="feedback-list" class="gap-3">
                             {% for mail in mails %}
                             <div class="d-flex flex-column card2" 
-                            onclick="showDetails2('{{mail.id}}','{{mail.titulo}}', '{{mail.datahora}}', '{{mail.area}}', '{{mail.local}}', '{{mail.status}}', '{{mail.descricao}}')">
+                            onclick="showDetails2('{{mail.id}}','{{mail.titulo}}', '{{mail.datahora}}', '{{mail.area}}', '{{mail.local}}', '{{mail.status}}', '{{mail.descricao}}', 'adm')">
                                 <div class="h d-flex justify-content-between">
                                     <h4>{{ mail.titulo }}</h4>
                                     <p>{{ mail.datahora|time:'H:i' }} - {{ mail.datahora|date:'d/m/Y' }}</p>
@@ -196,7 +177,7 @@
                 {% if historic %}
                 {% for h in historic %}
                 <div class="d-flex flex-column card2"
-                onclick="showDetails('{{h.titulo}}', '{{h.datahora}}', '{{h.area}}', '{{h.local}}', '{{h.status}}', '{{h.descricao}}')">
+                onclick="showDetails2('{{h.id}}', '{{h.titulo}}', '{{h.datahora}}', '{{h.area}}', '{{h.local}}', '{{h.status}}', '{{h.descricao}}', 'usuario_comum')">
                     <div class="h d-flex justify-content-between">
                         <h4>{{ h.titulo }}</h4>
                         <p>{{ h.datahora|time:'H:i' }} - {{ h.datahora|date:'d/m/Y' }}</p>
@@ -241,36 +222,8 @@
             window.location.href = '/ver_form/' + x + '/';
         }
 
-        function showDetails(titulo, time, area, local, status, descricao) {
-        var modal = document.getElementById('Details');
-        modal.style.display = 'flex';
-
-        window.onclick = function (event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-
-        document.getElementById('titulo').textContent = titulo;
-        document.getElementById('datahora').textContent = time;
-        document.getElementById('area').textContent = area;
-        document.getElementById('local').textContent = local;
-        document.getElementById('status').textContent = status;
-        document.getElementById('descricao').textContent = descricao;
-
-        if (status == "Não Respondida") {
-            cor = 'blue';
-        } else if (status == "Em Andamento") {
-            cor = 'yellow';
-        } else if (status == "Não Resolvido") {
-            cor = 'red';
-        } else if (status == "Resolvido") {
-            cor = 'green';
-        }
-        document.getElementById('status').style.color = cor;
-    }
-
-    function showDetails2(id, titulo, time, area, local, status, descricao) {
+        
+    function showDetails2(id, titulo, time, area, local, status, descricao, usuario) {
         var modal = document.getElementById('Details2');
         modal.style.display = 'flex';
 
@@ -287,7 +240,8 @@
         document.getElementById('status2').textContent = status;
         document.getElementById('descricao2').textContent = descricao;
 
-        document.getElementById('feedback_id').value = id;
+        document.getElementById('feedback_id2').value = id;
+        document.getElementById('usuario').value = usuario;
 
         // Faça uma requisição AJAX para obter os comentários e exibi-los
         $.ajax({
@@ -295,16 +249,20 @@
             type: 'GET',
             success: function (data) {
                 // Limpe os comentários_container
-                $('#comentarios_container').empty();
+                $('#comentarios_container2').empty();
 
                 // Converta a string JSON de volta para um objeto JavaScript
                 var comentarios = JSON.parse(data);
+
+                console.log(comentarios);
+
 
                 // Mapeie os objetos para um novo array contendo apenas os campos desejados
                 var comentariosFiltrados = comentarios.map(function (comentario) {
                     return {
                         comentario: comentario.fields.comentario,
                         datahora: comentario.fields.datahora,
+                        usuario: comentario.fields.usuario,
                     };
                 });
 
@@ -314,7 +272,12 @@
                     var divComentario = $('<div>').addClass('coment'); // Cria uma nova div para cada comentário
                     divComentario.append('<p id="comentario_texto">' + comentario.comentario + '</p>'); // Adiciona o comentário à div
                     divComentario.append('<p id="datahora">' + datahora.toLocaleString() + '</p>'); // Adiciona a hora à div
-                    $('#comentarios_container').append(divComentario); // Adiciona a div à div principal
+                    if (comentario.usuario == 2){
+                    divComentario.append('<p id="tipo_usuario">adm</p>'); // Adiciona a hora à div
+                    } else if (comentario.usuario == 3){
+                        divComentario.append('<p id="tipo_usuario">usuário_comum</p>'); // Adiciona a hora à div
+                    }
+                    $('#comentarios_container2').append(divComentario); // Adiciona a div à div principal
                 });
             },
             error: function (error) {
