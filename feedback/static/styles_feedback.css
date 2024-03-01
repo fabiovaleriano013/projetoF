@@ -77,6 +77,7 @@ section.hide {
 #mail {
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 #mail #feedback-list {
@@ -84,11 +85,18 @@ section.hide {
     flex-direction: column;
 }
 
+#texto-mail{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
 #historic {
     width: 100%;
 }
 
-#historic .card2 {
+.card2 {
     cursor: pointer;
     width: 500px;
 }
@@ -103,6 +111,12 @@ section.hide {
 
 .card2 .h {
     align-items: center;
+}
+
+.perfil{
+    background-color: var(--complementary-color);
+    border-radius: 50%;
+    pointer-events: all;
 }
 
 /* The Modal (background) */
@@ -143,6 +157,43 @@ section.hide {
     /* Could be more or less, depending on screen size */
 }
 
+/* The Modal (background) */
+.modal2 {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    /* Stay in place */
+    z-index: 1;
+    /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    /* Full width */
+    height: 100vh;
+    /* Full height */
+    overflow: hidden;
+    /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Black w/ opacity */
+    transition: height 1s ease;
+}
+
+/* Modal Content/Box */
+.modal-content2 {
+    background-color: #fefefe;
+    margin: 2% auto auto auto;
+    /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 10px;
+    width: 80%;
+    max-height: 90vh;
+    transition: margin-top 1s ease, opacity 5s ease;
+    /* Could be more or less, depending on screen size */
+}
+
+.modal-content2 .informacoes
+
 /* The Close Button */
 .close {
     color: #aaa;
@@ -177,8 +228,13 @@ section.hide {
     #feedback h1 {
         font-size: 1.7em;
     }
+
+    #texto-mail{
+        position: static;
+        transform: translate(0%, 0%);
+    }
     
-    #historic .card2 {
+    .card2 {
         width: 200px;
     }
     

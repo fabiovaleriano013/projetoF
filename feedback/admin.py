@@ -49,7 +49,16 @@ class QuestaoAdmin(admin.ModelAdmin):
 class ComentarioAdmin(admin.ModelAdmin):
     list_display = ('comentario', 'datahora', 'feedback_id')
 
-admin.site.register(feedback)
+class ComentarioInline(admin.TabularInline):  # Use admin.StackedInline se preferir exibição empilhada
+    list_display = ('comentario', 'descricao', 'datahora')
+    model = comentario
+    extra = 1  # Número de formulários em branco exibidos para novos Comentarios
+
+class FeedbackAdmin(admin.ModelAdmin):
+    list_display = ('titulo', 'descricao', 'datahora')
+    inlines = [ComentarioInline]
+
+admin.site.register(feedback, FeedbackAdmin)
 admin.site.register(area)
 admin.site.register(local)
 admin.site.register(status)

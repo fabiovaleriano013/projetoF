@@ -86,6 +86,40 @@
                 </div>
             </div>
 
+            <div id="Details2" class="modal2" style="display: none;">
+                <div class="modal-content2">
+                    <span class="close" onclick="fecharModal()">&times;</span>
+                    <h1 id="titulo2"></h1>
+                    <div class="informacoes">
+                        <p id="datahora2"></p>
+                        <h5>Área</h5>
+                        <p id="area2"></p>
+                        <h5>Local</h5>
+                        <p id="local2"></p>
+                        <h5>Descrição</h5>
+                        <p id="descricao2"></p>
+                        <h5>Status</h5>
+                        <ul>
+                            <li id="status2"></li>
+                        </ul>
+                    </div>
+                    <div id="comentarios_container">
+                    </div>
+                    <form method="post" action="{% url 'salvar_comentario' %}">
+                    {% csrf_token %}
+                        <div class="comentario">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text bg-secondary text-light rounded-circle" id="basic-addon1">&#9786;</span>
+                                <!-- <img src="caminho/para/a/imagem.jpg" alt="Foto da pessoa" class="img-fluid" /> -->
+                                <input type="text" class="form-control rounded-left" name="texto" id="texto" placeholder="Digite seu comentário" aria-label="Digite seu comentário" aria-describedby="button-addon2">
+                                <input type="hidden" name="feedback_id" id="feedback_id">
+                                <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Enviar</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <section id='feedback' class="form-container hide">
                 <form method="POST" action="{% url 'salvarAnswer' %}" class="p-4" onsubmit="atualizarCamposHidden()">
                     {% csrf_token %}
@@ -96,20 +130,17 @@
                     <div class="mb-3">
                         {% if quest.tipo.tipo == "Resposta Curta" %}
                         <label for="{{ quest.id }}" class="form-label bold">{{ quest.titulo }}</label>
-                        <input type="text" name="{{ quest.id }}" id="titulo" placeholder="{{ quest.titulo }}"
+                        <input type="text" name="{{ quest.id }}" id="{{ quest.id }}" placeholder="{{ quest.titulo }}"
                             class="form-control questao" required>
                         {% elif quest.tipo.tipo == "Dropdown" %}
                         <label for="{{ quest.id }}" class="form-label bold">{{ quest.titulo }}</label>
-                        {% if quest.area %}
-                        <select name="{{ quest.id }}" id="area" class="form-select questao" required>
+                        <select name="{{ quest.id }}" id="{{ quest.id }}" class="form-select questao" required>
                             <option value=""></option>
+                            {% if quest.area %}
                             {% for area in areas %}
                             <option value="{{ area.id }}">{{ area.area }}</option>
                             {% endfor %}
-
-                        {% elif quest.local %}
-                        <select name="{{ quest.id }}" id="local" class="form-select questao" required>
-                            <option value=""></option>
+                            {% elif quest.local %}
                             {% for local in locais %}
                             <option value="{{ local.id }}">{{ local.local }}</option>
                             {% endfor %}
@@ -117,7 +148,7 @@
                         </select>
                         {% elif quest.tipo.tipo == "Resposta Longa" %}
                         <label for="{{ quest.id }}" class="form-label bold">{{ quest.titulo }}</label>
-                        <textarea id="descricao" name="{{ quest.id }}" maxlength="3000" rows="2" cols="50" class="form-control questao" 
+                        <textarea id="{{ quest.id }}" name="{{ quest.id }}" maxlength="3000" rows="2" cols="50" class="form-control questao" 
                             placeholder="{{ quest.titulo }}" required ></textarea>
                         {% endif %}
                     </div>
@@ -137,11 +168,10 @@
                     {% endfor %}
                 </select>
                     {% if mails %}
-
-
                         <div id="feedback-list" class="gap-3">
                             {% for mail in mails %}
-                            <div class="d-flex flex-column card2">
+                            <div class="d-flex flex-column card2" 
+                            onclick="showDetails2('{{mail.id}}','{{mail.titulo}}', '{{mail.datahora}}', '{{mail.area}}', '{{mail.local}}', '{{mail.status}}', '{{mail.descricao}}')">
                                 <div class="h d-flex justify-content-between">
                                     <h4>{{ mail.titulo }}</h4>
                                     <p>{{ mail.datahora|time:'H:i' }} - {{ mail.datahora|date:'d/m/Y' }}</p>
@@ -156,7 +186,7 @@
                             {% endfor %}
                         </div>
                     {% else %}
-                            <h1>Você ainda não recebeu nenhum feedback</h1>
+                            <h1 id="texto-mail">Você ainda não recebeu nenhum feedback</h1>
                         </div>
                     {% endif %}
                         
@@ -239,6 +269,63 @@
         }
         document.getElementById('status').style.color = cor;
     }
+
+    function showDetails2(id, titulo, time, area, local, status, descricao) {
+        var modal = document.getElementById('Details2');
+        modal.style.display = 'flex';
+
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        document.getElementById('titulo2').textContent = titulo;
+        document.getElementById('datahora2').textContent = time;
+        document.getElementById('area2').textContent = area;
+        document.getElementById('local2').textContent = local;
+        document.getElementById('status2').textContent = status;
+        document.getElementById('descricao2').textContent = descricao;
+
+        document.getElementById('feedback_id').value = id;
+
+        // Faça uma requisição AJAX para obter os comentários e exibi-los
+        $.ajax({
+            url: '/obter_comentarios/' + id + '/',
+            type: 'GET',
+            success: function (data) {
+                // Limpe os comentários_container
+                $('#comentarios_container').empty();
+
+                // Adicione os comentários à div
+                data.forEach(function (comentario) {
+                    $('#comentarios_container').append('<p>' + comentario.comentario + ' em ' + comentario.datahora + '</p>');
+                });
+            },
+            error: function (error) {
+                console.log("abla");
+            }
+        });
+
+        if (status == "Não Respondida") {
+            cor = 'blue';
+        } else if (status == "Em Andamento") {
+            cor = 'yellow';
+        } else if (status == "Não Resolvido") {
+            cor = 'red';
+        } else if (status == "Resolvido") {
+            cor = 'green';
+        }
+        document.getElementById('status2').style.color = cor;
+    }
+
+    document.getElementById('button-addon2').addEventListener('click', function() {
+        // Obtenha o valor do texto digitado
+        var comentario = document.querySelector('.comentario input').value;
+
+        // Redirecione para a URL desejada, incluindo o texto como parâmetro
+        window.location.href = '/salvarcomentario?texto=' + encodeURIComponent(comentario);
+    });
         
         function fecharModal() {
             var modal = document.getElementById('Details');
@@ -250,8 +337,6 @@
             var urlParams = window.location.href;
             // Use uma expressão regular para extrair o número entre as barras
             var match = urlParams.match(/\/ver_form\/(\d+)\/?/);
-
-            console.log(match[1])
 
             // Pré-selecione a opção no elemento select com id 'areaId'
             if (match[1]) {
