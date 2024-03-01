@@ -98,3 +98,16 @@ class feedback(models.Model):
     
     def __str__(self):
         return self.titulo
+
+class comentario(models.Model):
+    comentario = models.TextField(null=True, verbose_name="Comentário")
+    # usuario = models.CharField(max_length=50)
+    datahora = models.DateTimeField(null=True, auto_now_add=True)
+    feedback_id = models.ForeignKey(feedback, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = _("Comentário")
+        verbose_name_plural = _("Comentários")
+
+    def __str__(self):
+        return str(self.comentario)

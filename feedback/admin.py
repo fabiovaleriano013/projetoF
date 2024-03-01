@@ -46,10 +46,14 @@ class QuestionarioAdmin(nested_admin.NestedModelAdmin):
 class QuestaoAdmin(admin.ModelAdmin):
     list_display = ('id', 'titulo')
 
+class ComentarioAdmin(admin.ModelAdmin):
+    list_display = ('comentario', 'datahora', 'feedback_id')
+
 admin.site.register(feedback)
 admin.site.register(area)
 admin.site.register(local)
 admin.site.register(status)
+admin.site.register(comentario, ComentarioAdmin)
 
 admin.site.register(questionario, QuestionarioAdmin)
 admin.site.register(tipo)
