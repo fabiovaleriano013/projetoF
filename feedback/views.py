@@ -21,7 +21,7 @@ def home(request):
     
     return render(
         request,
-        "index_feedback.html",
+        "pagina2.html",
         {'u_questionario': u_questionario,
          'quests': quests,
          'areas': areas,
@@ -56,7 +56,7 @@ def salvarAnswer(request):
 
         fb.save()
 
-        rota = request.POST.get("permissao")
+        rota = request.POST.get("log")
 
         if rota == "adm":
             # Redirecione para a página de sucesso ou faça o que for necessário
@@ -107,15 +107,19 @@ def salvar_comentario(request):
     if request.method == 'POST':
         texto_comentario = request.POST.get('texto', '')
         feedback_id = feedback.objects.get(id=request.POST.get('feedback_id', ''))
-        user = usuario.objects.get(nome=request.POST.get('usuario', ''))
-
+        rota = request.POST.get('log2', '')
+        user = usuario.objects.get(nome=rota)
 
         # Crie o objeto de comentário e salve no banco de dados
         novo_comentario = comentario(comentario=texto_comentario, usuario=user, feedback_id=feedback_id)
         novo_comentario.save()
 
-        # Redirecione para a página desejada após salvar o comentário
-        return redirect(reverse('ver_form', args=[0]))
+
+        if rota == "adm":
+            # Redirecione para a página de sucesso ou faça o que for necessário
+            return redirect(reverse('ver_form', args=[0]))
+        elif rota == "usuario_comum":
+            return redirect(home)
 
     # Em caso de método GET ou outros casos, você pode lidar conforme necessário
     return HttpResponse("Erro: Método não suportado ou dados ausentes.")

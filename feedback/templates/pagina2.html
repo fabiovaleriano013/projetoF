@@ -44,9 +44,11 @@
                 <li class="nav-item">
                     <a onclick="showSection('feedback')"><i class="uil uil-file-search-alt"></i></a>
                 </li>
+                {% if mails %}
                 <li class="nav-item">
                     <a onclick="showSection('mail')"><i class="uil uil-envelope"></i></a>
                 </li>
+                {% endif %}
                 <li class="nav-item">
                     <a id="loadData" onclick="showSection('historic')"><i class="uil uil-copy-landscape"></i></a>
                 </li>
@@ -92,7 +94,11 @@
                                     <!-- <img src="caminho/para/a/imagem.jpg" alt="Foto da pessoa" class="img-fluid" /> -->
                                     <input type="text" class="form-control rounded-left" name="texto" id="texto" placeholder="Digite seu comentário" aria-label="Digite seu comentário" aria-describedby="button-addon2">
                                     <input type="hidden" name="feedback_id" id="feedback_id2">
-                                    <input type="hidden" name="usuario" id="usuario" value="adm">
+                                    {% if mails %}
+                                        <input type="hidden" name="log2" value="adm">
+                                    {% else %}
+                                        <input type="hidden" name="log2" value="usuario_comum">
+                                    {% endif %}
                                     <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Enviar</button>
                                 </div>
                             </div>
@@ -101,7 +107,7 @@
                 </div>
             </div>
 
-            <section id='feedback' class="form-container hide">
+            <section id='feedback' class="form-container">
                 <form method="POST" action="{% url 'salvarAnswer' %}" class="p-4" onsubmit="atualizarCamposHidden()">
                     {% csrf_token %}
                     <div class="mb-1 d-flex flex-column align-items-center">
@@ -135,49 +141,46 @@
                     </div>
                     {% endfor %}
                     <input type="hidden" name="arrayP" id="arrayP" value="">
+                    {% if mails %}
                     <input type="hidden" name="log" id="log" value="adm">
+                    {% else %}
+                    <input type="hidden" name="log" id="log" value="user">
+                    {% endif %}
                     <div class="d-flex flex-column align-items-center">
                         <button type="submit" class="btn btn-primary">Enviar Resposta</button>
                     </div>
                 </form>
             </section>
 
-            <section id='mail' class="gap-4">
+            {% if mails %}
+            <section id='mail' class="gap-4 hide">
                 <select name="area" id="areaId" onchange="myFunction()">
                     {% for area in areas %}
                         <option value="{{ area.id }}">{{ area.area }}</option>
                     {% endfor %}
                 </select>
-                    {% if mails %}
                         <div id="feedback-list" class="gap-3">
                             {% for mail in mails %}
                             <div class="d-flex flex-column card2" 
-                            onclick="showDetails2('{{mail.id}}','{{mail.titulo}}', '{{mail.datahora}}', '{{mail.area}}', '{{mail.local}}', '{{mail.status}}', '{{mail.descricao}}', 'adm')">
-                                <div class="h d-flex justify-content-between">
-                                    <h4>{{ mail.titulo }}</h4>
-                                    <p>{{ mail.datahora|time:'H:i' }} - {{ mail.datahora|date:'d/m/Y' }}</p>
-                                </div>
-                                <div class="b d-flex justify-content-between">
-                                    <p>{{ mail.area }}</p>
-                                    <ul>
-                                        <li class="status">{{ mail.status }}</li>
-                                    </ul>
-                                </div>
+                            onclick="showDetails2('{{mail.id}}','{{mail.titulo}}', '{{mail.datahora}}', '{{mail.area}}', '{{mail.local}}', '{{mail.status}}', '{{mail.descricao}}')">
+                                <h4>{{ mail.titulo }}</h4>
+                                <p>{{ mail.descricao }}</p>
+                                <p>{{ mail.datahora|time:'H:i' }} - {{ mail.datahora|date:'d/m/Y' }}</p>
+                                <ul>
+                                    <li class="status"></li>
+                                </ul>
                             </div>
                             {% endfor %}
                         </div>
-                    {% else %}
-                            <h1 id="texto-mail">Você ainda não recebeu nenhum feedback</h1>
-                        </div>
-                    {% endif %}
+                    </section>
+            {% endif %}
                         
-                </section>
 
             <section id='historic' class="flex-column align-items-center gap-3 hide">
                 {% if historic %}
                 {% for h in historic %}
                 <div class="d-flex flex-column card2"
-                onclick="showDetails2('{{h.id}}', '{{h.titulo}}', '{{h.datahora}}', '{{h.area}}', '{{h.local}}', '{{h.status}}', '{{h.descricao}}', 'usuario_comum')">
+                onclick="showDetails2('{{h.id}}', '{{h.titulo}}', '{{h.datahora}}', '{{h.area}}', '{{h.local}}', '{{h.status}}', '{{h.descricao}}')">
                     <div class="h d-flex justify-content-between">
                         <h4>{{ h.titulo }}</h4>
                         <p>{{ h.datahora|time:'H:i' }} - {{ h.datahora|date:'d/m/Y' }}</p>
@@ -223,7 +226,7 @@
         }
 
         
-    function showDetails2(id, titulo, time, area, local, status, descricao, usuario) {
+    function showDetails2(id, titulo, time, area, local, status, descricao) {
         var modal = document.getElementById('Details2');
         modal.style.display = 'flex';
 
@@ -241,7 +244,6 @@
         document.getElementById('descricao2').textContent = descricao;
 
         document.getElementById('feedback_id2').value = id;
-        document.getElementById('usuario').value = usuario;
 
         // Faça uma requisição AJAX para obter os comentários e exibi-los
         $.ajax({
@@ -253,9 +255,6 @@
 
                 // Converta a string JSON de volta para um objeto JavaScript
                 var comentarios = JSON.parse(data);
-
-                console.log(comentarios);
-
 
                 // Mapeie os objetos para um novo array contendo apenas os campos desejados
                 var comentariosFiltrados = comentarios.map(function (comentario) {
@@ -317,7 +316,7 @@
             var match = urlParams.match(/\/ver_form\/(\d+)\/?/);
 
             // Pré-selecione a opção no elemento select com id 'areaId'
-            if (match[1]) {
+            if (match && match[1]) {
                 document.getElementById('areaId').value = match[1];
             }
 
