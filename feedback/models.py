@@ -23,6 +23,7 @@ class tipo(models.Model):
         ('Única Escolha', 'Única Escolha'),
         ('Várias Escolhas', 'Várias Escolhas'),
         ('Dropdown', 'Dropdown'),
+        ('Imagem', 'Imagem'),
     ]
     tipo = models.CharField(max_length=50, choices=tipo_opcoes, unique=True)
 
@@ -85,11 +86,12 @@ class status(models.Model):
 
 class feedback(models.Model):
     titulo = models.CharField(max_length=255, null=True, verbose_name="Título")
-    area = models.ForeignKey(area, on_delete=models.DO_NOTHING)
-    local = models.ForeignKey(local, on_delete=models.DO_NOTHING)
-    descricao = models.TextField(max_length=255, null=True)
-    status = models.ForeignKey(status, on_delete=models.DO_NOTHING)
-    datahora = models.DateTimeField(null=True, auto_now_add=True)
+    area = models.ForeignKey(area, on_delete=models.DO_NOTHING, verbose_name="Área")
+    local = models.ForeignKey(local, on_delete=models.DO_NOTHING, verbose_name="Local")
+    descricao = models.TextField(max_length=255, null=True, verbose_name="Descrição")
+    imagem = models.ImageField(upload_to='feedback/static/img/', null=True, blank=True, verbose_name="Imagem")
+    status = models.ForeignKey(status, on_delete=models.DO_NOTHING, verbose_name="Status")
+    datahora = models.DateTimeField(null=True, auto_now_add=True, verbose_name="Data e Hora")
     # userId = models.ForeignKey(Tabela_Usuario, on_delete=models.CASCADE)
     
     class Meta:

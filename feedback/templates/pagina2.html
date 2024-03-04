@@ -44,7 +44,7 @@
                 <li class="nav-item">
                     <a onclick="showSection('feedback')"><i class="uil uil-file-search-alt"></i></a>
                 </li>
-                {% if mails %}
+                {% if Eadm %}
                 <li class="nav-item">
                     <a onclick="showSection('mail')"><i class="uil uil-envelope"></i></a>
                 </li>
@@ -84,6 +84,10 @@
                         <ul>
                             <li id="status2"></li>
                         </ul>
+                        <div class="imagem">
+                            <h5>Imagem</h5>
+                            <img id="imagem">
+                        </div>
                         <div id="comentarios_container2" class="d-flex flex-column gap-2">
                         </div>
                         <form method="post" action="{% url 'salvar_comentario' %}">
@@ -94,7 +98,7 @@
                                     <!-- <img src="caminho/para/a/imagem.jpg" alt="Foto da pessoa" class="img-fluid" /> -->
                                     <input type="text" class="form-control rounded-left" name="texto" id="texto" placeholder="Digite seu comentário" aria-label="Digite seu comentário" aria-describedby="button-addon2">
                                     <input type="hidden" name="feedback_id" id="feedback_id2">
-                                    {% if mails %}
+                                    {% if Eadm %}
                                         <input type="hidden" name="log2" value="adm">
                                     {% else %}
                                         <input type="hidden" name="log2" value="usuario_comum">
@@ -107,7 +111,7 @@
                 </div>
             </div>
 
-            <section id='feedback' class="form-container">
+            <section id='feedback' class="form-container hide">
                 <form method="POST" action="{% url 'salvarAnswer' %}" class="p-4" onsubmit="atualizarCamposHidden()">
                     {% csrf_token %}
                     <div class="mb-1 d-flex flex-column align-items-center">
@@ -137,11 +141,14 @@
                         <label for="{{ quest.id }}" class="form-label bold">{{ quest.titulo }}</label>
                         <textarea id="{{ quest.id }}" name="{{ quest.id }}" maxlength="3000" rows="2" cols="50" class="form-control questao" 
                             placeholder="{{ quest.titulo }}" required ></textarea>
+                        {% elif quest.tipo.tipo == "Imagem" %}
+                        <label for="{{ quest.id }}" class="form-label bold">{{ quest.titulo }}</label>
+                        <input type="file" name="{{ quest.id }}" id="{{ quest.id }}" accept="image/*" class="form-control questao" required>
                         {% endif %}
                     </div>
                     {% endfor %}
                     <input type="hidden" name="arrayP" id="arrayP" value="">
-                    {% if mails %}
+                    {% if Eadm %}
                     <input type="hidden" name="log" id="log" value="adm">
                     {% else %}
                     <input type="hidden" name="log" id="log" value="user">
@@ -152,25 +159,31 @@
                 </form>
             </section>
 
-            {% if mails %}
-            <section id='mail' class="gap-4 hide">
+            {% if Eadm %}
+            <section id='mail' class="flex-column align-items-center gap-4">
                 <select name="area" id="areaId" onchange="myFunction()">
                     {% for area in areas %}
                         <option value="{{ area.id }}">{{ area.area }}</option>
                     {% endfor %}
                 </select>
-                        <div id="feedback-list" class="gap-3">
+                        <div id="feedback-list" class="gap-1">
+                            {% if mails %}
                             {% for mail in mails %}
-                            <div class="d-flex flex-column card2" 
-                            onclick="showDetails2('{{mail.id}}','{{mail.titulo}}', '{{mail.datahora}}', '{{mail.area}}', '{{mail.local}}', '{{mail.status}}', '{{mail.descricao}}')">
-                                <h4>{{ mail.titulo }}</h4>
-                                <p>{{ mail.descricao }}</p>
-                                <p>{{ mail.datahora|time:'H:i' }} - {{ mail.datahora|date:'d/m/Y' }}</p>
-                                <ul>
-                                    <li class="status"></li>
-                                </ul>
+                            <div class="d-flex card2" 
+                            onclick="showDetails2('{{mail.id}}','{{mail.titulo}}', '{{mail.datahora}}', '{{mail.area}}', '{{mail.local}}', '{{mail.status}}', '{{mail.descricao}}', '{{mail.imagem}}')">
+                                <p class="status">{{mail.status}}</p>
+                                <h4 class="textinho" >{{ mail.titulo }}</h4>
+                                <p class="textinho">{{ mail.descricao }}</p>
+                                {% if mail.datahora|date:'d/m/Y' == hoje %}
+                                    <p>{{ mail.datahora|time:'H:i' }}</p>
+                                {% else %}
+                                    <p>{{ mail.datahora|date:'d/m/Y' }}</p>
+                                {% endif %}                            
                             </div>
                             {% endfor %}
+                            {% else %}
+                            <h1>Você ainda não recebeu nenhum feedback</h1>
+                            {% endif %}
                         </div>
                     </section>
             {% endif %}
@@ -180,7 +193,7 @@
                 {% if historic %}
                 {% for h in historic %}
                 <div class="d-flex flex-column card2"
-                onclick="showDetails2('{{h.id}}', '{{h.titulo}}', '{{h.datahora}}', '{{h.area}}', '{{h.local}}', '{{h.status}}', '{{h.descricao}}')">
+                onclick="showDetails2('{{h.id}}', '{{h.titulo}}', '{{h.datahora}}', '{{h.area}}', '{{h.local}}', '{{h.status}}', '{{h.descricao}}', '{{h.imagem}}')">
                     <div class="h d-flex justify-content-between">
                         <h4>{{ h.titulo }}</h4>
                         <p>{{ h.datahora|time:'H:i' }} - {{ h.datahora|date:'d/m/Y' }}</p>
@@ -225,8 +238,11 @@
             window.location.href = '/ver_form/' + x + '/';
         }
 
+        function limitarCaracteres(texto, limite) {
+            return texto.length > limite ? texto.substring(0, limite) + '...' : texto;
+        }
         
-    function showDetails2(id, titulo, time, area, local, status, descricao) {
+    function showDetails2(id, titulo, time, area, local, status, descricao, img) {
         var modal = document.getElementById('Details2');
         modal.style.display = 'flex';
 
@@ -243,7 +259,16 @@
         document.getElementById('status2').textContent = status;
         document.getElementById('descricao2').textContent = descricao;
 
+        img = img.match(/\/([^/]+)\./)[1];
+        if (img != ''){
+            document.getElementById('imagem').src = img ? '{% static "img/" %}' + img + '.png' : '';
+        } else {
+            document.getElementById('imagem').alt = 'Usuário não enviou foto';
+            document.getElementById('imagem').src = '';
+        }
+
         document.getElementById('feedback_id2').value = id;
+        console.log(img)
 
         // Faça uma requisição AJAX para obter os comentários e exibi-los
         $.ajax({
@@ -268,14 +293,18 @@
                 // Adicione os comentários filtrados à div
                 comentariosFiltrados.forEach(function (comentario) {
                     var datahora = new Date(comentario.datahora);
+
+                    // Adiciona o comentário à div, limitando a 50 caracteres
+                    // var comentarioTexto = comentario.comentario.length > 20 ? comentario.comentario.substring(0, 20) + '...' : comentario.comentario;
+
                     var divComentario = $('<div>').addClass('coment'); // Cria uma nova div para cada comentário
-                    divComentario.append('<p id="comentario_texto">' + comentario.comentario + '</p>'); // Adiciona o comentário à div
-                    divComentario.append('<p id="datahora">' + datahora.toLocaleString() + '</p>'); // Adiciona a hora à div
-                    if (comentario.usuario == 2){
-                    divComentario.append('<p id="tipo_usuario">adm</p>'); // Adiciona a hora à div
-                    } else if (comentario.usuario == 3){
-                        divComentario.append('<p id="tipo_usuario">usuário_comum</p>'); // Adiciona a hora à div
-                    }
+                        if (comentario.usuario == 2){
+                            divComentario.append('<p id="tipo_usuario">adm</p>'); // Adiciona a hora à div
+                        } else if (comentario.usuario != 2){
+                            divComentario.append('<p id="tipo_usuario">usuário_comum</p>'); // Adiciona a hora à div
+                        }
+                        divComentario.append('<p id="datahora">' + datahora.toLocaleString() + '</p>'); // Adiciona a hora à div
+                        divComentario.append('<p id="comentario_texto">' + comentario.comentario + '</p>'); // Adiciona o comentário à div
                     $('#comentarios_container2').append(divComentario); // Adiciona a div à div principal
                 });
             },
@@ -320,6 +349,12 @@
                 document.getElementById('areaId').value = match[1];
             }
 
+            var textinho = document.querySelectorAll('.textinho')
+            textinho.forEach(function (element) {
+                var texto = element.textContent;
+                element.textContent = limitarCaracteres(texto, 8);
+            })
+
             var status = document.querySelectorAll('.status')
             status.forEach(function (element) {
                 var cor;
@@ -334,6 +369,7 @@
                     cor = 'green';
                 }
                 element.style.color = cor;
+                element.textContent = "\u2022";
             })
         }
 

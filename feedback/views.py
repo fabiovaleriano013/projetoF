@@ -83,12 +83,18 @@ def ver_form(request, cod):
     u_questionario = questionario.objects.get()
     if cod == 0:
         mails = feedback.objects.all()
+        Eadm = True
+    elif cod == -1:
+        Eadm = False;
     else:
         mails = feedback.objects.filter(area = cod)
+        Eadm = True
     quests = questao.objects.filter(questionario_id=u_questionario)
     areas = area.objects.all()
     locais = local.objects.all()
     historic = feedback.objects.all()
+    # Defina hoje como o dia atual
+    hoje = datetime.today().date().strftime('%d/%m/%Y')
     
     # historic = feedback.objects.filter(user_id=$_SESSION['id'])
     
@@ -100,7 +106,9 @@ def ver_form(request, cod):
          'areas': areas,
          'locais': locais,
          'mails': mails,
-         'historic': historic}
+         'historic': historic,
+         'Eadm': Eadm,
+         'hoje': hoje}
     )
 
 def salvar_comentario(request):
