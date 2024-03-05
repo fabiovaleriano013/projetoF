@@ -56,9 +56,9 @@ section.hide {
     font-style: var(--container);
     border: none;
     width: auto;
+    margin: auto;
     overflow-y: auto;
     max-height: fit-content;
-    margin: auto;
 }
 
 #feedback form {
@@ -95,6 +95,7 @@ section.hide {
 
 #historic {
     width: 100%;
+    margin: auto;
     overflow-y: auto;
 }
 
@@ -147,9 +148,6 @@ section.hide {
     /* Enable scroll if needed */
     background-color: rgba(0, 0, 0, 0.4);
     /* Black w/ opacity */
-    display: flex;
-    justify-content: center;
-    align-items: center;
     transition: height 1s ease;
 }
 
@@ -157,41 +155,6 @@ section.hide {
 .modal-content {
     background-color: #fefefe;
     margin: auto;
-    /* 15% from the top and centered */
-    padding: 20px;
-    border: 1px solid #888;
-    border-radius: 10px;
-    width: 30%;
-    max-height: 70vh;
-    transition: margin-top 1s ease, opacity 5s ease;
-    /* Could be more or less, depending on screen size */
-}
-
-/* The Modal (background) */
-.modal2 {
-    display: none;
-    /* Hidden by default */
-    position: fixed;
-    /* Stay in place */
-    z-index: 1;
-    /* Sit on top */
-    left: 0;
-    top: 0;
-    width: 100%;
-    /* Full width */
-    height: 100vh;
-    /* Full height */
-    overflow: hidden;
-    /* Enable scroll if needed */
-    background-color: rgba(0, 0, 0, 0.4);
-    /* Black w/ opacity */
-    transition: height 1s ease;
-}
-
-/* Modal Content/Box */
-.modal-content2 {
-    background-color: #fefefe;
-    margin: 2% auto auto auto;
     /* 15% from the top and centered */
     padding: 20px 15px;
     border: 1px solid #888;
@@ -205,25 +168,29 @@ section.hide {
     /* Could be more or less, depending on screen size */
 }
 
-.modal-content2 .informacoes {
+.modal-content .informacoes {
     overflow-y: auto;
 }
 
 /* Estilos de rolagem */
-.modal-content2 .informacoes::-webkit-scrollbar {
+.modal-content .informacoes::-webkit-scrollbar {
     width: 8px;
 }
 
-.modal-content2 .informacoes::-webkit-scrollbar-thumb {
+.modal-content .informacoes::-webkit-scrollbar-thumb {
     background-color: #aaa;
     border-radius: 10px;
+}
+
+#titulo {
+    width: 85%;
 }
 
 #imagem {
     max-width: 95%;
 }
 
-#comentarios_container2{
+#comentarios_container{
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -304,14 +271,6 @@ section.hide {
     
     .card2 h4, .card2 p {
         font-size: 0.95em;
-    }
-
-    /* Modal Content/Box */
-    .modal-content {
-        width: 80%;
-        max-height: 70vh;
-        font-size: 1.1em;
-        padding-bottom: 1px;
     }
 
     .modal-content #titulo {

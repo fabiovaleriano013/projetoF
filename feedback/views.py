@@ -117,6 +117,11 @@ def obter_feed(request, id):
     mails_serializados = serialize('json', mails)
     return JsonResponse(mails_serializados, safe=False)
 
+def modal_feedback(request, id):
+    feed = feedback.objects.filter(id=id)
+    feed_serializados = serialize('json', feed)
+    return JsonResponse(feed_serializados, safe=False)
+
 def salvar_comentario(request):
     if request.method == 'POST':
         texto_comentario = request.POST.get('texto', '')
