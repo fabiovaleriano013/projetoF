@@ -111,6 +111,11 @@ def ver_form(request, cod):
              'Eadm': Eadm,
              'hoje': hoje}
         )
+    
+def obter_feed(request, id):
+    mails = feedback.objects.filter(area=id)
+    mails_serializados = serialize('json', mails)
+    return JsonResponse(mails_serializados, safe=False)
 
 def salvar_comentario(request):
     if request.method == 'POST':

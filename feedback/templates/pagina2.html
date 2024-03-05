@@ -69,7 +69,7 @@
 
     <main class="d-flex">
             <div id="Details2" class="modal2" style="display: none;">
-                <div class="modal-content2">
+                <div id="modal-content" class="modal-content2">
                     <span class="close" onclick="fecharModal('Details2')">&times;</span>
                     <h1 id="titulo2"></h1>
                     <div class="informacoes">
@@ -162,15 +162,16 @@
             {% if Eadm %}
             <section id='mail' class="flex-column align-items-center gap-4 hide">
                 <select name="area" id="areaId" onchange="myFunction()">
+                    <option value=""></option>
                     {% for area in areas %}
                         <option value="{{ area.id }}">{{ area.area }}</option>
                     {% endfor %}
                 </select>
-                        <div id="feedback-list" class="gap-1">
+                        <div id="feedback-list" class="gap-1 feedback-list">
                             {% if mails %}
                             {% for mail in mails %}
                             <div class="d-flex card2" 
-                            onclick="showDetails2('{{mail.id}}','{{mail.titulo}}', '{{mail.datahora}}', '{{mail.area}}', '{{mail.local}}', '{{mail.status}}', '{{mail.descricao}}', '{{mail.imagem}}')">
+                            onclick="showDetails2('{{mail.id}}')">
                                 <p class="status">{{mail.status}}</p>
                                 <h4 class="textinho" >{{ mail.titulo }}</h4>
                                 <p class="textinho">{{ mail.descricao }}</p>
@@ -190,7 +191,7 @@
                         
 
             <section id='historic' class="flex-column align-items-center gap-3 hide">
-                <div id="feedback-list" class="gap-1">
+                <div class="gap-1 feedback-list">
                 {% if historic %}
                 {% for h in historic %}
                 <div class="d-flex card2"
@@ -235,7 +236,66 @@
         function myFunction() {
             var x = document.getElementById("areaId").value;
 
-            window.location.href = '/ver_form/' + x + '/';
+            // Faça uma requisição AJAX para obter os comentários e exibi-los
+        $.ajax({
+            url: '/obter_feed/' + x + '/',
+            type: 'GET',
+            success: function (data) {
+                // Limpe os comentários_container
+                $('#feedback-list').empty();
+
+                // Converta a string JSON de volta para um objeto JavaScript
+                var mails = JSON.parse(data);
+
+                // Mapeie os objetos para um novo array contendo apenas os campos desejados
+                var mailsFiltrados = mails.map(function (mail) {
+                    return {
+                        area: mail.fields.area,
+                        datahora: mail.fields.datahora,
+                        descricao: mail.fields.descricao,
+                        imagem: mail.fields.imagem,
+                        local: mail.fields.local,
+                        status: mail.fields.status,
+                        titulo: mail.fields.titulo
+                    };
+                });
+
+                // Adicione os comentários filtrados à div
+                mailsFiltrados.forEach(function (mail) {
+                    var datahora = new Date(mail.datahora);
+
+                    // Adiciona o comentário à div, limitando a 50 caracteres
+                    // var comentarioTexto = comentario.comentario.length > 20 ? comentario.comentario.substring(0, 20) + '...' : comentario.comentario;
+var divCard = document.createElement('div');
+    divCard.className = 'd-flex card2';
+    divCard.onclick = function() {
+        showDetails2(mail.id);
+    };
+
+    ['p', 'h4', 'p', 'p'].forEach(function(tag, index) {
+        var element = document.createElement(tag);
+        element.className = (index < 2) ? 'textinho' : '';
+        if (index === 0) {
+            element.textContent = mail.status;
+        } else if (index === 1) {
+            element.textContent = mail.titulo;
+        } else if (index === 2) {
+            element.textContent = mail.descricao;
+        } else {
+            element.textContent = (mail.datahora === {{hoje}}) ? data.slice(8, 10) + '-' + data.slice(5, 7) + '-' + data.slice(0, 4) : data.slice(0, 10);
+        }
+        divCard.appendChild(element);
+    });
+
+    // Adicionar divCard ao seu contêiner HTML existente
+    var container = document.getElementById('feedback-list');  // Substitua 'seuContainerId' pelo ID do seu contêiner
+    container.appendChild(divCard);
+                });
+            },
+            error: function (error) {
+                console.log("abla");
+            }
+        });
         }
 
         function limitarCaracteres(texto, limite) {
@@ -251,6 +311,75 @@
                 modal.style.display = "none";
             }
         }
+
+        // Faça uma requisição AJAX para obter os comentários e exibi-los
+        $.ajax({
+            url: '/obter_comentarios/' + id + '/',
+            type: 'GET',
+            success: function (data) {
+                // Limpe os comentários_container
+                $('#comentarios_container2').empty();
+
+                // Converta a string JSON de volta para um objeto JavaScript
+                var comentarios = JSON.parse(data);
+
+                // Mapeie os objetos para um novo array contendo apenas os campos desejados
+                var comentariosFiltrados = comentarios.map(function (comentario) {
+                    return {
+                        comentario: comentario.fields.comentario,
+                        datahora: comentario.fields.datahora,
+                        usuario: comentario.fields.usuario,
+                    };
+                });
+
+                img = feed.imagem.match(/\/([^/]+)\./)[1];
+        if (img != ''){
+            document.getElementById('imagem').src = img ? '{% static "img/" %}' + img + '.png' : '';
+        } else {
+            document.getElementById('imagem').alt = 'Usuário não enviou foto';
+            document.getElementById('imagem').src = '';
+        }
+
+                $('#modal-contant').append('<h1 id="titulo">' + feed.titulo + '</h1>');
+
+                    var container = $('<div>').addClass('informacoes');
+                        container.append('<p id="datahora">' + datahora.toLocaleString() + '</p>');
+                        container.append('<h5>Área</h5>')
+                        container.append('<p id="area">' + feed.area + '</p>');
+                        container.append('<h5>Local</h5>');
+                        container.append('<p id="local">' + feed.local + '</p>');
+                        container.append('<h5>Descrição</h5>');
+                        container.append('<p id="descricao">' + feed.descricao + '</p>');
+                        container.append('<h5>Status</h5>');
+                        container.append('<ul><li id="status">' + feed.status + '</li></ul>');
+                        container.append('<div class="imagem"><h5>Imagem</h5><img id="imagem" src="' + feed.img + '"></div>');
+                        container.append('<p id="area">' + feed.area + '</p>');
+                    $('#comentarios_container2').append(container);
+
+                // Adicione os comentários filtrados à div
+                comentariosFiltrados.forEach(function (comentario) {
+                    var datahora = new Date(comentario.datahora);
+
+                    // Adiciona o comentário à div, limitando a 50 caracteres
+                    // var comentarioTexto = comentario.comentario.length > 20 ? comentario.comentario.substring(0, 20) + '...' : comentario.comentario;
+
+                    var divComentario = $('<div>').addClass('coment'); // Cria uma nova div para cada comentário
+                        if (comentario.usuario == 2){
+                            divComentario.append('<p id="tipo_usuario">adm</p>'); // Adiciona a hora à div
+                        } else if (comentario.usuario != 2){
+                            divComentario.append('<p id="tipo_usuario">usuário_comum</p>'); // Adiciona a hora à div
+                        }
+                        divComentario.append('<p id="datahora">' + datahora.toLocaleString() + '</p>'); // Adiciona a hora à div
+                        divComentario.append('<p id="comentario_texto">' + comentario.comentario + '</p>'); // Adiciona o comentário à div
+                    $('#comentarios_container2').append(divComentario); // Adiciona a div à div principal
+                });
+            },
+            error: function (error) {
+                console.log("abla");
+            }
+        });
+        
+
 
         document.getElementById('titulo2').textContent = titulo;
         document.getElementById('datahora2').textContent = time;
@@ -339,19 +468,6 @@
         }
 
         window.onload = function () {
-            // Obtenha o conteúdo da URL atual
-            var urlParams = window.location.href;
-            // Use uma expressão regular para extrair o número entre as barras
-            var match = urlParams.match(/\/ver_form\/(\d+)\/?/);
-
-            // Pré-selecione a opção no elemento select com id 'areaId'
-            if (match && document.getElementById('areaId')) {
-        var selectedId = match[1];
-
-        // Pré-selecione a opção no elemento select com id 'areaId'
-        document.getElementById('areaId').value = selectedId;
-    }
-
             var textinho = document.querySelectorAll('.textinho')
             textinho.forEach(function (element) {
                 var texto = element.textContent;
