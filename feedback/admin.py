@@ -20,7 +20,7 @@ def link_resposta(obj):
             '<a style="color: lightblue; text-decoration: underline;" href="{}" target="_blank">'
             'Visualizar Respostas'
             '</a>',
-            reverse('ver_form', args=[0]),
+            reverse('ver_form', args=[1]),
         )
 
 class QuestionarioAdmin(nested_admin.NestedModelAdmin):

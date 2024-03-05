@@ -70,7 +70,7 @@ section.hide {
     width: 100%;
 }
 
-#mail #feedback-list {
+#feedback-list {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -99,7 +99,7 @@ section.hide {
     align-items: center;
     text-align: center;
     cursor: pointer;
-    width: auto;
+    width: 95%;
     position: relative;
     
     background-color: var(--complementary-color);
@@ -296,11 +296,7 @@ section.hide {
 
     #feedback .mb-3 {
         margin-bottom: 0.5em !important;
-    }
-    
-    .card2 {
-        width: 95%;
-    }
+    }   
     
     .card2 h4, .card2 p {
         font-size: 0.95em;

@@ -19,15 +19,7 @@ def home(request):
     
     # historic = feedback.objects.filter(user_id=$_SESSION['id'])
     
-    return render(
-        request,
-        "pagina2.html",
-        {'u_questionario': u_questionario,
-         'quests': quests,
-         'areas': areas,
-         'locais': locais,
-         'historic': historic}
-    )
+    return redirect(reverse('ver_form', args=[0]))
 
 def salvarAnswer(request):
     try:
@@ -60,7 +52,7 @@ def salvarAnswer(request):
 
         if rota == "adm":
             # Redirecione para a página de sucesso ou faça o que for necessário
-            return redirect(reverse('ver_form', args=[0]))
+            return redirect(reverse('ver_form', args=[1]))
         elif rota == "user":
             return redirect(home)
 
@@ -82,10 +74,7 @@ def get_feedback(request, id):
 def ver_form(request, cod):
     u_questionario = questionario.objects.get()
     if cod == 0:
-        mails = feedback.objects.all()
-        Eadm = True
-    elif cod == -1:
-        Eadm = False;
+        Eadm = False
     else:
         mails = feedback.objects.filter(area = cod)
         Eadm = True
@@ -97,19 +86,31 @@ def ver_form(request, cod):
     hoje = datetime.today().date().strftime('%d/%m/%Y')
     
     # historic = feedback.objects.filter(user_id=$_SESSION['id'])
-    
-    return render(
-        request,
-        "pagina2.html",
-        {'u_questionario': u_questionario,
-         'quests': quests,
-         'areas': areas,
-         'locais': locais,
-         'mails': mails,
-         'historic': historic,
-         'Eadm': Eadm,
-         'hoje': hoje}
-    )
+    try:
+        return render(
+            request,
+            "pagina2.html",
+            {'u_questionario': u_questionario,
+             'quests': quests,
+             'areas': areas,
+             'locais': locais,
+             'mails': mails,
+             'historic': historic,
+             'Eadm': Eadm,
+             'hoje': hoje}
+        )
+    except:
+        return render(
+            request,
+            "pagina2.html",
+            {'u_questionario': u_questionario,
+             'quests': quests,
+             'areas': areas,
+             'locais': locais,
+             'historic': historic,
+             'Eadm': Eadm,
+             'hoje': hoje}
+        )
 
 def salvar_comentario(request):
     if request.method == 'POST':
@@ -125,7 +126,7 @@ def salvar_comentario(request):
 
         if rota == "adm":
             # Redirecione para a página de sucesso ou faça o que for necessário
-            return redirect(reverse('ver_form', args=[0]))
+            return redirect(reverse('ver_form', args=[1]))
         elif rota == "usuario_comum":
             return redirect(home)
 
