@@ -82,8 +82,6 @@ def ver_form(request, cod):
     areas = area.objects.all()
     locais = local.objects.all()
     historic = feedback.objects.all()
-    # Defina hoje como o dia atual
-    hoje = datetime.today().date().strftime('%d/%m/%Y')
     
     # historic = feedback.objects.filter(user_id=$_SESSION['id'])
     try:
@@ -96,8 +94,7 @@ def ver_form(request, cod):
              'locais': locais,
              'mails': mails,
              'historic': historic,
-             'Eadm': Eadm,
-             'hoje': hoje}
+             'Eadm': Eadm}
         )
     except:
         return render(
@@ -108,8 +105,7 @@ def ver_form(request, cod):
              'areas': areas,
              'locais': locais,
              'historic': historic,
-             'Eadm': Eadm,
-             'hoje': hoje}
+             'Eadm': Eadm}
         )
     
 def obter_feed(request, id):
@@ -125,23 +121,16 @@ def modal_feedback(request, id):
 def salvar_comentario(request):
     if request.method == 'POST':
         texto_comentario = request.POST.get('texto', '')
-        feedback_id = feedback.objects.get(id=request.POST.get('feedback_id', ''))
-        rota = request.POST.get('log2', '')
-        user = usuario.objects.get(nome=rota)
+        feedback_id = request.POST.get('feedbackId', '')
+        user = usuario.objects.get(nome=request.POST.get('usuario', ''))
 
-        # Crie o objeto de comentário e salve no banco de dados
         novo_comentario = comentario(comentario=texto_comentario, usuario=user, feedback_id=feedback_id)
         novo_comentario.save()
 
-
-        if rota == "adm":
-            # Redirecione para a página de sucesso ou faça o que for necessário
-            return redirect(reverse('ver_form', args=[1]))
-        elif rota == "usuario_comum":
-            return redirect(home)
-
-    # Em caso de método GET ou outros casos, você pode lidar conforme necessário
-    return HttpResponse("Erro: Método não suportado ou dados ausentes.")
+        # Responda com um JSON
+        return JsonResponse({'status': 'success'})
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Método inválido'})
 
 def obter_comentarios(request, id):
     comentarios = comentario.objects.filter(feedback_id=id)

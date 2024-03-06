@@ -90,20 +90,20 @@
                         </div>
                         <div id="comentarios_container" class="d-flex flex-column gap-2">
                         </div>
-                        <form method="post" action="{% url 'salvar_comentario' %}">
+                        <form method="post" >
                         {% csrf_token %}
                             <div class="comentario">
                                 <div class="input-group mb-3">
                                     <span class="input-group-text bg-secondary text-light rounded-circle" id="basic-addon1">&#9786;</span>
                                     <!-- <img src="caminho/para/a/imagem.jpg" alt="Foto da pessoa" class="img-fluid" /> -->
-                                    <input type="text" class="form-control rounded-left" name="texto" id="texto" placeholder="Digite seu comentário" aria-label="Digite seu comentário" aria-describedby="button-addon2">
-                                    <input type="hidden" name="feedback_id" id="feedback_id2">
+                                    <input type="text" class="form-control rounded-left" name="texto" id="texto" placeholder="Digite seu comentário" aria-label="Digite seu comentário" aria-describedby="button-addon">
+                                    <input type="hidden" name="feedback_id" id="feedback_id">
                                     {% if Eadm %}
-                                        <input type="hidden" name="log2" value="adm">
+                                        <input type="hidden" name="log2" id="log2" value="adm">
                                     {% else %}
-                                        <input type="hidden" name="log2" value="usuario_comum">
+                                        <input type="hidden" name="log2" id="log2" value="usuario_comum">
                                     {% endif %}
-                                    <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Enviar</button>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="salvarComentario()" id="button-addon">Enviar</button>
                                 </div>
                             </div>
                         </form>
@@ -111,7 +111,7 @@
                 </div>
             </div>
 
-            <section id='feedback' class="form-container">
+            <section id='feedback' class="form-container hide">
                 <form method="POST" action="{% url 'salvarAnswer' %}" class="p-4" onsubmit="atualizarCamposHidden()">
                     {% csrf_token %}
                     <div class="mb-1 d-flex flex-column align-items-center">
@@ -160,7 +160,7 @@
             </section>
 
             {% if Eadm %}
-            <section id='mail' class="flex-column align-items-center gap-4 hide">
+            <section id='mail' class="flex-column align-items-center gap-4">
                 <select name="area" id="areaId" onchange="myFunction()">
                     <option value=""></option>
                     {% for area in areas %}
@@ -171,7 +171,7 @@
                             {% if mails %}
                             {% for mail in mails %}
                             <div class="d-flex card2" 
-                            onclick="showDetails2('{{mail.id}}')">
+                            onclick="showDetails('{{mail.id}}')">
                                 <p class="status">{{ mail.status }}</p>
                                 <h4 class="textinho" >{{ mail.titulo }}</h4>
                                 <p class="textinho">{{ mail.descricao }}</p>
@@ -195,7 +195,7 @@
                 {% if historic %}
                 {% for h in historic %}
                 <div class="d-flex card2"
-                onclick="showDetails2('{{h.id}}', '{{h.titulo}}', '{{h.datahora}}', '{{h.area}}', '{{h.local}}', '{{h.status}}', '{{h.descricao}}', '{{h.imagem}}')">
+                onclick="showDetails('{{h.id}}', '{{h.titulo}}', '{{h.datahora}}', '{{h.area}}', '{{h.local}}', '{{h.status}}', '{{h.descricao}}', '{{h.imagem}}')">
                     <p class="status">{{h.status}}</p>
                     <h4 class="textinho" >{{ h.titulo }}</h4>
                     <p class="textinho">{{ h.descricao }}</p>
@@ -233,6 +233,9 @@
             });
         }
 
+        var hoje = new Date();
+        var options = {year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric'};
+
         function myFunction() {
             var x = document.getElementById("areaId").value;
 
@@ -250,6 +253,7 @@
                     // Mapeie os objetos para um novo array contendo apenas os campos desejados
                     var mailsFiltrados = mails.map(function (mail) {
                         return {
+                            id: mail.pk,
                             area: mail.fields.area,
                             datahora: mail.fields.datahora,
                             descricao: mail.fields.descricao,
@@ -269,18 +273,35 @@
                         var divCard = document.createElement('div');
                         divCard.className = 'd-flex card2';
                         divCard.onclick = function() {
-                            showDetails2(mail.id);
+                            showDetails(mail.id);
                         };
 
-                        ['h4', 'p', 'p'].forEach(function(tag, index) {
+                        ['p', 'h4', 'p', 'p'].forEach(function(tag, index) {
                             var element = document.createElement(tag);
-                            element.className = (index < 2) ? 'textinho' : '';
+                            element.className = (index === 0) ? 'status' : (index <= 2) ? 'textinho' : '';
+                            
                             if (index === 0) {
-                                element.textContent = mail.titulo;
+                                var cor;
+                                var texto = mail.status;
+                                if (texto == "2") {
+                                    cor = 'blue';
+                                } else if (texto == "1") {
+                                    cor = 'yellow';
+                                } else if (texto == "3") {
+                                    cor = 'red';
+                                } else if (texto == "4") {
+                                    cor = 'green';
+                                }
+                                element.textContent = "\u2022";
+                                element.style.color = cor;
                             } else if (index === 1) {
+                                element.textContent = mail.titulo;
+                            } else if (index === 2) {
                                 element.textContent = mail.descricao;
                             } else {
-                                element.textContent = (mail.datahora === {{hoje}}) ? data.slice(8, 10) + '-' + data.slice(5, 7) + '-' + data.slice(0, 4) : data.slice(0, 10);
+                                element.textContent = (datahora.toLocaleDateString() === hoje.toLocaleDateString()) ? 
+                                datahora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}) : 
+                                datahora.toLocaleDateString();
                             }
                             divCard.appendChild(element);
                         });
@@ -291,7 +312,7 @@
                     });
                 },
                 error: function (error) {
-                    console.log("abla");
+                    console.log("amor");
                 }
             });
         }
@@ -300,7 +321,7 @@
             return texto.length > limite ? texto.substring(0, limite) + '...' : texto;
         }
         
-    function showDetails2(id, titulo, time, area, local, status, descricao, img) {
+    function showDetails(id) {
         var modal = document.getElementById('Details');
         modal.style.display = 'flex';
 
@@ -309,13 +330,14 @@
                 modal.style.display = "none";
             }
         }
+        
+        document.getElementById('texto').value = '';
 
         // Faça uma requisição AJAX para obter os comentários e exibi-los
         $.ajax({
             url: '/modal_feedback/' + id + '/',
             type: 'GET',
             success: function (data) {
-                // Limpe os comentários_container
 
                 // Converta a string JSON de volta para um objeto JavaScript
                 var feedbacks = JSON.parse(data);
@@ -342,12 +364,29 @@
                     $('#descricao').text(feed.descricao);
                     $('#status').text(feed.status);
 
+
+                    var cor;
+                    var status = feed.status;
+                    if (status == "Não Respondida") {
+                        cor = 'blue';
+                    } else if (status == "Em Andamento") {
+                        cor = 'yellow';
+                    } else if (status == "Não Resolvido") {
+                        cor = 'red';
+                    } else if (status == "Resolvido") {
+                        cor = 'green';
+                    }
+                    document.getElementById('status').style.color = cor;
+
+                    var imagemElement = document.getElementById('imagem');
+
                     if (feed.imagem != ''){
                         img = feed.imagem.match(/\/([^/]+)\./)[1];
-                        document.getElementById('imagem').src = img ? '{% static "img/" %}' + img + '.png' : '';
+                        imagemElement.src = img ? '{% static "img/" %}' + img + '.png' : '';
+                        imagemElement.parentElement.style.textAlign = 'center';
                     } else {
-                        document.getElementById('imagem').alt = 'Usuário não enviou foto';
-                        document.getElementById('imagem').src = '';
+                        imagemElement.alt = 'Usuário não enviou foto';
+                        imagemElement.src = '';
                     }
                 });
             
@@ -357,7 +396,7 @@
             }
         });
 
-        document.getElementById('feedback_id2').value = id;
+        document.getElementById('feedback_id').value = id;
 
         // Faça uma requisição AJAX para obter os comentários e exibi-los
         $.ajax({
@@ -401,27 +440,27 @@
                 console.log("abla");
             }
         });
-
-        var cor;
-        if (status == "Não Respondida") {
-            cor = 'blue';
-        } else if (status == "Em Andamento") {
-            cor = 'yellow';
-        } else if (status == "Não Resolvido") {
-            cor = 'red';
-        } else if (status == "Resolvido") {
-            cor = 'green';
-        }
-        document.getElementById('status').style.color = cor;
     }
 
-    document.getElementById('button-addon2').addEventListener('click', function() {
-        // Obtenha o valor do texto digitado
-        var comentario = document.querySelector('.comentario input').value;
+    function salvarComentario() {
+        var texto = $('#texto').val();
+        var feedbackId = $('#feedback_id').val();
+        var usuario = $('#log2').val();
 
-        // Redirecione para a URL desejada, incluindo o texto como parâmetro
-        window.location.href = '/salvarcomentario?texto=' + encodeURIComponent(comentario);
-    });
+        $.ajax({
+            url: '/salvar_comentario/',  // Substitua pela sua URL de salvamento
+            type: 'POST',
+            data: { 'texto': texto,
+                    'feedbackId': feedbackId,
+                    'usuario': usuario },
+            success: function (data) {
+                console.log('Nome salvo com sucesso!');
+            },
+            error: function (error) {
+                console.error('Erro ao salvar o nome:', error);
+            }
+        });
+    }
         
         function fecharModal(modal) {
             var modal = document.getElementById(modal);

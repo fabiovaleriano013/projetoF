@@ -186,8 +186,13 @@ section.hide {
     width: 85%;
 }
 
+.modal-content .imagem h5{
+    text-align: left;
+}
+
 #imagem {
     max-width: 95%;
+    text-align: center;
 }
 
 #comentarios_container{

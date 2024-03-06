@@ -43,6 +43,9 @@ class QuestionarioAdmin(nested_admin.NestedModelAdmin):
 
         obj.save()
 
+class StatusAdmin(admin.ModelAdmin):
+    list_display = ('id', 'status')
+
 class QuestaoAdmin(admin.ModelAdmin):
     list_display = ('id', 'titulo')
 
@@ -65,7 +68,7 @@ class UsuarioAdmin(admin.ModelAdmin):
 admin.site.register(feedback, FeedbackAdmin)
 admin.site.register(area)
 admin.site.register(local)
-admin.site.register(status)
+admin.site.register(status, StatusAdmin)
 admin.site.register(comentario, ComentarioAdmin)
 admin.site.register(usuario, UsuarioAdmin)
 
