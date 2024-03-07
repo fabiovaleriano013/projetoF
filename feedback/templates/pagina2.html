@@ -129,22 +129,14 @@ PARE -->
                                 <div class="input-group mb-3">
                                     <span class="input-group-text bg-secondary text-light rounded-circle" id="basic-addon1">&#9786;</span>
                                     <!-- <img src="caminho/para/a/imagem.jpg" alt="Foto da pessoa" class="img-fluid" /> -->
-<<<<<<< HEAD
-                                    <input type="text" class="form-control rounded-left" name="texto" id="texto" placeholder="Digite seu comentário" aria-label="Digite seu comentário" aria-describedby="button-addon2">
-=======
                                     <input type="text" class="form-control rounded-left" name="texto" id="texto" placeholder="Digite seu comentário" aria-label="Digite seu comentário" aria-describedby="button-addon">
->>>>>>> c0da11c77b3b0affc003d763549b78224e5bb589
                                     <input type="hidden" name="feedback_id" id="feedback_id">
                                     {% if Eadm %}
                                         <input type="hidden" name="log2" id="log2" value="adm">
                                     {% else %}
                                         <input type="hidden" name="log2" id="log2" value="usuario_comum">
                                     {% endif %}
-<<<<<<< HEAD
-                                    <button class="btn btn-outline-secondary" type="submit" id="button-addon">Enviar</button>
-=======
                                     <button class="btn btn-outline-secondary" type="button" onclick="salvarComentario()" id="button-addon">Enviar</button>
->>>>>>> c0da11c77b3b0affc003d763549b78224e5bb589
                                 </div>
                             </div>
                         </form>
@@ -212,13 +204,8 @@ PARE -->
                             {% if mails %}
                             {% for mail in mails %}
                             <div class="d-flex card2" 
-<<<<<<< HEAD
-                            onclick="showDetails2('{{mail.id}}')">
-                                <p id="status2" class="status">{{ mail.status }}</p>
-=======
                             onclick="showDetails('{{mail.id}}')">
                                 <p class="status">{{ mail.status }}</p>
->>>>>>> c0da11c77b3b0affc003d763549b78224e5bb589
                                 <h4 class="textinho" >{{ mail.titulo }}</h4>
                                 <p class="textinho">{{ mail.descricao }}</p>
                                 {% if mail.datahora|date:'d/m/Y' == hoje %}
@@ -323,19 +310,6 @@ PARE -->
                         };
 
                         ['p', 'h4', 'p', 'p'].forEach(function(tag, index) {
-<<<<<<< HEAD
-        var element = document.createElement(tag);
-        element.className = (index === 0) ? 'status' : (index < 2) ? 'textinho' : '';
-        if (index === 0) {
-            element.textContent = mail.status;
-        } else if (index === 1) {
-            element.textContent = mail.titulo;
-        } else if (index === 2) {
-            element.textContent = mail.descricao;
-        } else {
-                                element.textContent = (datahora === {{hoje}}) ? mail.datahora.slice(8, 10) + '/' + mail.datahora.slice(5, 7) + '/' + mail.datahora.slice(0, 4) : new Date(mail.datahora).toLocaleDateString('pt-BR');
-
-=======
                             var element = document.createElement(tag);
                             element.className = (index === 0) ? 'status' : (index <= 2) ? 'textinho' : '';
                             
@@ -361,7 +335,6 @@ PARE -->
                                 element.textContent = (datahora.toLocaleDateString() === hoje.toLocaleDateString()) ? 
                                 datahora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}) : 
                                 datahora.toLocaleDateString();
->>>>>>> c0da11c77b3b0affc003d763549b78224e5bb589
                             }
                             divCard.appendChild(element);
                         });
@@ -381,11 +354,7 @@ PARE -->
             return texto.length > limite ? texto.substring(0, limite) + '...' : texto;
         }
         
-<<<<<<< HEAD
-    function showDetails2(id) {
-=======
     function showDetails(id) {
->>>>>>> c0da11c77b3b0affc003d763549b78224e5bb589
         var modal = document.getElementById('Details');
         modal.style.display = 'flex';
 
@@ -505,7 +474,6 @@ PARE -->
             }
         });
 
-<<<<<<< HEAD
         var cor;
         if (status == "Não Respondida") {
             cor = 'blue';
@@ -553,8 +521,6 @@ document.getElementById('button-addon').addEventListener('click', function (even
     salvarComentario(); // Chama a função para enviar o comentário
 });
         
-=======
->>>>>>> c0da11c77b3b0affc003d763549b78224e5bb589
         function fecharModal(modal) {
             var modal = document.getElementById(modal);
             modal.style.display = 'none';

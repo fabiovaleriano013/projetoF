@@ -119,8 +119,6 @@ def modal_feedback(request, id):
     feed_serializados = serialize('json', feed)
     return JsonResponse(feed_serializados, safe=False)
 
-<<<<<<< HEAD
-=======
 def salvar_comentario(request):
     if request.method == 'POST':
         texto_comentario = request.POST.get('texto', '')
@@ -135,7 +133,6 @@ def salvar_comentario(request):
     else:
         return JsonResponse({'status': 'error', 'message': 'Método inválido'})
 
->>>>>>> c0da11c77b3b0affc003d763549b78224e5bb589
 def obter_comentarios(request, id):
     comentarios = comentario.objects.filter(feedback_id=id)
     comentarios_serializados = serialize('json', comentarios)
