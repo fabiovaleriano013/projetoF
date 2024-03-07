@@ -97,13 +97,13 @@
                                     <span class="input-group-text bg-secondary text-light rounded-circle" id="basic-addon1">&#9786;</span>
                                     <!-- <img src="caminho/para/a/imagem.jpg" alt="Foto da pessoa" class="img-fluid" /> -->
                                     <input type="text" class="form-control rounded-left" name="texto" id="texto" placeholder="Digite seu comentário" aria-label="Digite seu comentário" aria-describedby="button-addon2">
-                                    <input type="hidden" name="feedback_id" id="feedback_id2">
+                                    <input type="hidden" name="feedback_id" id="feedback_id">
                                     {% if Eadm %}
                                         <input type="hidden" name="log2" value="adm">
                                     {% else %}
                                         <input type="hidden" name="log2" value="usuario_comum">
                                     {% endif %}
-                                    <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Enviar</button>
+                                    <button class="btn btn-outline-secondary" type="submit" id="button-addon">Enviar</button>
                                 </div>
                             </div>
                         </form>
@@ -111,7 +111,7 @@
                 </div>
             </div>
 
-            <section id='feedback' class="form-container">
+            <section id='feedback' class="form-container hide">
                 <form method="POST" action="{% url 'salvarAnswer' %}" class="p-4" onsubmit="atualizarCamposHidden()">
                     {% csrf_token %}
                     <div class="mb-1 d-flex flex-column align-items-center">
@@ -160,7 +160,7 @@
             </section>
 
             {% if Eadm %}
-            <section id='mail' class="flex-column align-items-center gap-4 hide">
+            <section id='mail' class="flex-column align-items-center gap-4">
                 <select name="area" id="areaId" onchange="myFunction()">
                     <option value=""></option>
                     {% for area in areas %}
@@ -172,7 +172,7 @@
                             {% for mail in mails %}
                             <div class="d-flex card2" 
                             onclick="showDetails2('{{mail.id}}')">
-                                <p class="status">{{ mail.status }}</p>
+                                <p id="status2" class="status">{{ mail.status }}</p>
                                 <h4 class="textinho" >{{ mail.titulo }}</h4>
                                 <p class="textinho">{{ mail.descricao }}</p>
                                 {% if mail.datahora|date:'d/m/Y' == hoje %}
@@ -272,15 +272,18 @@
                             showDetails2(mail.id);
                         };
 
-                        ['h4', 'p', 'p'].forEach(function(tag, index) {
-                            var element = document.createElement(tag);
-                            element.className = (index < 2) ? 'textinho' : '';
-                            if (index === 0) {
-                                element.textContent = mail.titulo;
-                            } else if (index === 1) {
-                                element.textContent = mail.descricao;
-                            } else {
-                                element.textContent = (mail.datahora === {{hoje}}) ? data.slice(8, 10) + '-' + data.slice(5, 7) + '-' + data.slice(0, 4) : data.slice(0, 10);
+                        ['p', 'h4', 'p', 'p'].forEach(function(tag, index) {
+        var element = document.createElement(tag);
+        element.className = (index === 0) ? 'status' : (index < 2) ? 'textinho' : '';
+        if (index === 0) {
+            element.textContent = mail.status;
+        } else if (index === 1) {
+            element.textContent = mail.titulo;
+        } else if (index === 2) {
+            element.textContent = mail.descricao;
+        } else {
+                                element.textContent = (datahora === {{hoje}}) ? mail.datahora.slice(8, 10) + '/' + mail.datahora.slice(5, 7) + '/' + mail.datahora.slice(0, 4) : new Date(mail.datahora).toLocaleDateString('pt-BR');
+
                             }
                             divCard.appendChild(element);
                         });
@@ -300,7 +303,7 @@
             return texto.length > limite ? texto.substring(0, limite) + '...' : texto;
         }
         
-    function showDetails2(id, titulo, time, area, local, status, descricao, img) {
+    function showDetails2(id) {
         var modal = document.getElementById('Details');
         modal.style.display = 'flex';
 
@@ -353,11 +356,11 @@
             
             },
             error: function (error) {
-                console.log("abla");
+                console.log("abla maiusculo");
             }
         });
 
-        document.getElementById('feedback_id2').value = id;
+        document.getElementById('feedback_id').value = id;
 
         // Faça uma requisição AJAX para obter os comentários e exibi-los
         $.ajax({
@@ -415,13 +418,39 @@
         document.getElementById('status').style.color = cor;
     }
 
-    document.getElementById('button-addon2').addEventListener('click', function() {
-        // Obtenha o valor do texto digitado
-        var comentario = document.querySelector('.comentario input').value;
+    function salvarComentario() {
+    var textoComentario = document.getElementById('texto').value;
+    var feedbackId = document.getElementById('feedback_id').value;
+    var rota = document.getElementById('log2').value;
 
-        // Redirecione para a URL desejada, incluindo o texto como parâmetro
-        window.location.href = '/salvarcomentario?texto=' + encodeURIComponent(comentario);
+    // Crie um objeto FormData para enviar os dados do formulário
+    var formData = new FormData();
+    formData.append('texto', textoComentario);
+    formData.append('feedback_id', feedbackId);
+    formData.append('log2', rota);
+
+    // Faça a requisição Ajax
+    $.ajax({
+        url: '{% url "salvar_comentario" %}',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            // Lide com a resposta do servidor, se necessário
+            console.log('Comentário salvo com sucesso!');
+        },
+        error: function (error) {
+            // Lide com erros, se necessário
+            console.error('Erro ao salvar o comentário:', error);
+        }
     });
+}
+
+document.getElementById('button-addon').addEventListener('click', function (event) {
+    event.preventDefault(); // Impede o envio padrão do formulário
+    salvarComentario(); // Chama a função para enviar o comentário
+});
         
         function fecharModal(modal) {
             var modal = document.getElementById(modal);

@@ -7,6 +7,7 @@ from django.http import Http404, JsonResponse, HttpResponse, HttpResponseBadRequ
 from datetime import datetime
 import json
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
 
 
 # Create your views here.
@@ -122,28 +123,26 @@ def modal_feedback(request, id):
     feed_serializados = serialize('json', feed)
     return JsonResponse(feed_serializados, safe=False)
 
-def salvar_comentario(request):
-    if request.method == 'POST':
-        texto_comentario = request.POST.get('texto', '')
-        feedback_id = feedback.objects.get(id=request.POST.get('feedback_id', ''))
-        rota = request.POST.get('log2', '')
-        user = usuario.objects.get(nome=rota)
-
-        # Crie o objeto de comentário e salve no banco de dados
-        novo_comentario = comentario(comentario=texto_comentario, usuario=user, feedback_id=feedback_id)
-        novo_comentario.save()
-
-
-        if rota == "adm":
-            # Redirecione para a página de sucesso ou faça o que for necessário
-            return redirect(reverse('ver_form', args=[1]))
-        elif rota == "usuario_comum":
-            return redirect(home)
-
-    # Em caso de método GET ou outros casos, você pode lidar conforme necessário
-    return HttpResponse("Erro: Método não suportado ou dados ausentes.")
-
 def obter_comentarios(request, id):
     comentarios = comentario.objects.filter(feedback_id=id)
     comentarios_serializados = serialize('json', comentarios)
     return JsonResponse(comentarios_serializados, safe=False)
+    
+@csrf_exempt
+def salvar_comentario(request):
+    if request.method == 'POST':
+        texto_comentario = request.POST.get('texto', '')
+        feedback_id = request.POST.get('feedback_id', '')
+        rota = request.POST.get('log2', '')
+        
+        # Se você tiver uma lógica para determinar o usuário (rota) aqui, ajuste conforme necessário
+        user = Usuario.objects.get(nome=rota)
+
+        # Crie o objeto de comentário e salve no banco de dados
+        novo_comentario = Comentario(comentario=texto_comentario, usuario=user, feedback_id=feedback_id)
+        novo_comentario.save()
+
+        # Redirecione para a página de sucesso ou faça o que for necessário
+        return JsonResponse({'message': 'Comentário salvo com sucesso!'})
+
+    return JsonResponse({'error': 'Método inválido'}, status=400)
