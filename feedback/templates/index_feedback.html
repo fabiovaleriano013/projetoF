@@ -2,6 +2,39 @@
 <html lang="pt-br">
 {% load static %}
 
+
+
+
+
+
+<!-- e15 = 1
+e14 = 1
+
+e13 = 1
+e12 = 1
+
+
+imp e13 = 1
+
+2-)
+LG e15
+COP e15 e12
+e14 = 1
+SE e12 = 1 e8
+SUB e12 e14 e12
+MUL e15 e12 e15
+VA e4
+IMP e15
+PARE -->
+
+
+
+
+
+
+
+
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -44,11 +77,11 @@
                 <li class="nav-item">
                     <a onclick="showSection('feedback')"><i class="uil uil-file-search-alt"></i></a>
                 </li>
+                {% if Eadm %}
                 <li class="nav-item">
-                    <!--{% if usuairo.id == setor %}
-                        <a onclick="showSection('mail')"><i class="uil uil-envelope"></i></a>
-                    {% endif %}-->
+                    <a onclick="showSection('mail')"><i class="uil uil-envelope"></i></a>
                 </li>
+                {% endif %}
                 <li class="nav-item">
                     <a id="loadData" onclick="showSection('historic')"><i class="uil uil-copy-landscape"></i></a>
                 </li>
@@ -69,27 +102,54 @@
 
     <main class="d-flex">
             <div id="Details" class="modal" style="display: none;">
-                <div class="modal-content">
-                    <span class="close" onclick="fecharModal()">&times;</span>
+                <div id="modal-content" class="modal-content">
+                    <span class="close" onclick="fecharModal('Details')">&times;</span>
                     <h1 id="titulo"></h1>
                     <div class="informacoes">
-                    <p id="datahora"></p>
-                    <h5>Área</h5>
-                    <p id="area"></p>
-                    <h5>Local</h5>
-                    <p id="local"></p>
-                    <h5>Descrição</h5>
-                    <p id="descricao"></p>
-                    <h5>Status</h5>
-                    <ul>
-                        <li id="status"></li>
-                    </ul>
-                </div>
+                        <p id="datahora2"></p>
+                        <h5>Área</h5>
+                        <p id="area"></p>
+                        <h5>Local</h5>
+                        <p id="local"></p>
+                        <h5>Descrição</h5>
+                        <p id="descricao"></p>
+                        <h5>Status</h5>
+                        <ul>
+                            <li id="status"></li>
+                        </ul>
+                        <div class="imagem">
+                            <h5>Imagem</h5>
+                            <img id="imagem">
+                        </div>
+                        <div id="comentarios_container" class="d-flex flex-column gap-2">
+                        </div>
+                        <form method="post" id="form" enctype="multipart/form-data" action="{% url 'salvar_comentario' %}">
+                        {% csrf_token %}
+                            <div class="comentario">
+                                <div class="input-group mb-3">
+                                    <!-- <img src="caminho/para/a/imagem.jpg" alt="Foto da pessoa" class="img-fluid" /> -->
+                                    <label for="coment_img" class="input-group-text bg-secondary text-light rounded-circle" style="cursor: pointer;">&#47;</label>
+                                    <input type="file" name="coment_img" id="coment_img" class="verificacao" accept="image/*" style="display: none;">
+
+                                    <label for="camera_img" class="input-group-text bg-secondary text-light rounded-circle" style="cursor: pointer;" onclick="abrirCamera()">📷</label>
+
+                                    <input type="text" class="form-control rounded-left verificacao" name="texto" id="texto" placeholder="Digite seu comentário" aria-label="Digite seu comentário" aria-describedby="button-addon">
+                                    <input type="hidden" name="feedback_id" id="feedback_id">
+                                    {% if Eadm %}
+                                        <input type="hidden" name="log2" id="log2" value="adm">
+                                    {% else %}
+                                        <input type="hidden" name="log2" id="log2" value="usuario_comum">
+                                    {% endif %}
+                                    <button class="btn btn-outline-secondary" type="submit" id="button-addon">Enviar</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
 
             <section id='feedback' class="form-container">
-                <form method="POST" action="{% url 'salvarAnswer' %}" class="p-4" onsubmit="atualizarCamposHidden()">
+                <form method="POST" action="{% url 'salvarAnswer' %}" class="p-4" onsubmit="atualizarCamposHidden()" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="mb-1 d-flex flex-column align-items-center">
                         <h1 class="mb-4">{{ u_questionario.nome }}</h1>
@@ -118,51 +178,75 @@
                         <label for="{{ quest.id }}" class="form-label bold">{{ quest.titulo }}</label>
                         <textarea id="{{ quest.id }}" name="{{ quest.id }}" maxlength="3000" rows="2" cols="50" class="form-control questao" 
                             placeholder="{{ quest.titulo }}" required ></textarea>
+                        {% elif quest.tipo.tipo == "Imagem" %}
+                        <label for="{{ quest.id }}" class="form-label bold">{{ quest.titulo }}</label>
+                        <input type="file" name="form_imagem" id="form_imagem" accept="image/*" class="form-control questao">
                         {% endif %}
                     </div>
                     {% endfor %}
                     <input type="hidden" name="arrayP" id="arrayP" value="">
-                    <input type="hidden" name="permissao" id="permissao" value="user">
+                    {% if Eadm %}
+                    <input type="hidden" name="log" id="log" value="adm">
+                    {% else %}
+                    <input type="hidden" name="log" id="log" value="user">
+                    {% endif %}
                     <div class="d-flex flex-column align-items-center">
                         <button type="submit" class="btn btn-primary">Enviar Resposta</button>
                     </div>
                 </form>
             </section>
 
-            <section id='mail' class="hide">
-                {% if mails %}
-                {% for mail in mails %}
-                <div class="form-check">
-                    <input type="checkbox" name="{{ quest.id }}" value="{{ alternative.titulo }}"
-                        id="alt_{{ alternative.id }}" class="form-check-input">
-                    <label for="alt_{{ alternative.id }}" class="form-check-label">{{ alternative.titulo}}</label>
-                </div>
-                {% endfor %}
-                {% else %}
-                <h1>Você ainda não recebeu nenhum feedback</h1>
-                {% endif %}
-            </section>
+            {% if Eadm %}
+            <section id='mail' class="flex-column align-items-center gap-4 hide">
+                <select name="area" id="areaId" onchange="myFunction()">
+                    <option value=""></option>
+                    {% for area in areas %}
+                        <option value="{{ area.id }}">{{ area.area }}</option>
+                    {% endfor %}
+                </select>
+                        <div id="feedback-list" class="gap-1 feedback-list">
+                            {% if mails %}
+                            {% for mail in mails %}
+                            <div class="d-flex card2" 
+                            onclick="showDetails('{{mail.id}}')">
+                                <p class="status">{{ mail.status }}</p>
+                                <h4 class="textinho" >{{ mail.titulo }}</h4>
+                                <p class="textinho">{{ mail.descricao }}</p>
+                                {% if mail.datahora|date:'d/m/Y' == hoje %}
+                                    <p>{{ mail.datahora|time:'H:i' }}</p>
+                                {% else %}
+                                    <p>{{ mail.datahora|date:'d/m/Y' }}</p>
+                                {% endif %}                            
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <h1>Você ainda não recebeu nenhum feedback</h1>
+                            {% endif %}
+                        </div>
+                    </section>
+            {% endif %}
+                        
 
             <section id='historic' class="flex-column align-items-center gap-3 hide">
+                <div class="gap-1 feedback-list">
                 {% if historic %}
                 {% for h in historic %}
-                <div class="d-flex flex-column card2"
-                onclick="showDetails('{{h.titulo}}', '{{h.datahora}}', '{{h.area}}', '{{h.local}}', '{{h.status}}', '{{h.descricao}}')">
-                    <div class="h d-flex justify-content-between">
-                        <h4>{{ h.titulo }}</h4>
-                        <p>{{ h.datahora|time:'H:i' }} - {{ h.datahora|date:'d/m/Y' }}</p>
-                    </div>
-                    <div class="b d-flex justify-content-between">
-                        <p>{{ h.area }}</p>
-                        <ul>
-                            <li class="status">{{ h.status }}</li>
-                        </ul>
-                    </div>
+                <div class="d-flex card2"
+                onclick="showDetails('{{h.id}}', '{{h.titulo}}', '{{h.datahora}}', '{{h.area}}', '{{h.local}}', '{{h.status}}', '{{h.descricao}}', '{{h.imagem}}')">
+                    <p class="status">{{h.status}}</p>
+                    <h4 class="textinho" >{{ h.titulo }}</h4>
+                    <p class="textinho">{{ h.descricao }}</p>
+                    {% if h.datahora|date:'d/m/Y' == hoje %}
+                        <p>{{ h.datahora|time:'H:i' }}</p>
+                    {% else %}
+                        <p>{{ h.datahora|date:'d/m/Y' }}</p>
+                    {% endif %}
                 </div>
                 {% endfor %}
                 {% else %}
                 <h1>Você ainda não enviou nenhum feedback</h1>
                 {% endif %}
+                </div>
             </section>
     </main>
 
@@ -173,8 +257,6 @@
         integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
         crossorigin="anonymous"></script>
     <!-- Bootstrap JavaScript and dependencies -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
     <script>
         function showSection(section) {
             var div = document.querySelector('main');
@@ -188,43 +270,281 @@
             });
         }
 
-        function showDetails(titulo, time, area, local, status, descricao) {
-        var modal = document.getElementById('Details');
-        modal.style.display = 'flex';
+        var hoje = new Date();
+        var options = {year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric'};
 
-        window.onclick = function (event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
+        function myFunction() {
+            var x = document.getElementById("areaId").value;
+
+            // Faça uma requisição AJAX para obter os comentários e exibi-los
+            $.ajax({
+                url: '/obter_feed/' + x + '/',
+                type: 'GET',
+                success: function (data) {
+                    // Limpe os comentários_container
+                    $('#feedback-list').empty();
+
+                    // Converta a string JSON de volta para um objeto JavaScript
+                    var mails = JSON.parse(data);
+
+                    // Mapeie os objetos para um novo array contendo apenas os campos desejados
+                    var mailsFiltrados = mails.map(function (mail) {
+                        return {
+                            id: mail.pk,
+                            area: mail.fields.area,
+                            datahora: mail.fields.datahora,
+                            descricao: mail.fields.descricao,
+                            status: mail.fields.status,
+                            titulo: mail.fields.titulo
+                        };
+                    });
+
+                    // Adicione os comentários filtrados à div
+                    mailsFiltrados.forEach(function (mail) {
+                        var datahora = new Date(mail.datahora);
+
+                        // Adiciona o comentário à div, limitando a 50 caracteres
+                        // var comentarioTexto = comentario.comentario.length > 20 ? comentario.comentario.substring(0, 20) + '...' : comentario.comentario;
+                        var divCard = document.createElement('div');
+                        divCard.className = 'd-flex card2';
+                        divCard.onclick = function() {
+                            showDetails(mail.id);
+                        };
+
+                        ['p', 'h4', 'p', 'p'].forEach(function(tag, index) {
+                            var element = document.createElement(tag);
+                            element.className = (index === 0) ? 'status' : (index <= 2) ? 'textinho' : '';
+                            
+                            if (index === 0) {
+                                var cor;
+                                var texto = mail.status;
+                                if (texto == "2") {
+                                    cor = 'blue';
+                                } else if (texto == "1") {
+                                    cor = 'yellow';
+                                } else if (texto == "3") {
+                                    cor = 'red';
+                                } else if (texto == "4") {
+                                    cor = 'green';
+                                }
+                                element.textContent = "\u2022";
+                                element.style.color = cor;
+                            } else if (index === 1) {
+                                element.textContent = mail.titulo;
+                            } else if (index === 2) {
+                                element.textContent = mail.descricao;
+                            } else {
+                                console.log
+                                element.textContent = (datahora.toLocaleDateString() === hoje.toLocaleDateString()) ? 
+                                datahora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}) : 
+                                datahora.toLocaleDateString();
+                            }
+                            divCard.appendChild(element);
+                        });
+
+                        // Adicionar divCard ao seu contêiner HTML existente
+                        var container = document.getElementById('feedback-list');  // Substitua 'seuContainerId' pelo ID do seu contêiner
+                            container.appendChild(divCard);
+                    });
+                },
+                error: function (error) {
+                    console.log("amor");
+                }
+            });
+        }
+
+        function limitarCaracteres(texto, limite) {
+            return texto.length > limite ? texto.substring(0, limite) + '...' : texto;
+        }
+        
+        function showDetails(id) {
+            var modal = document.getElementById('Details');
+            modal.style.display = 'flex';
+
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        
+            document.getElementById('texto').value = '';
+
+            // Faça uma requisição AJAX para obter os comentários e exibi-los
+            $.ajax({
+                url: '/modal_feedback/' + id + '/',
+                type: 'GET',
+                success: function (data) {
+
+                    // Converta a string JSON de volta para um objeto JavaScript
+                    var feedbacks = JSON.parse(data);
+
+                    // Mapeie os objetos para um novo array contendo apenas os campos desejados
+                    var feedbacksFiltrados = feedbacks.map(function (feed) {
+                        return {
+                            titulo: feed.fields.titulo,
+                            area: feed.fields.area,
+                            local: feed.fields.local,
+                            descricao: feed.fields.descricao,
+                            imagem: feed.fields.imagem,
+                            status: feed.fields.status,
+                            datahora: feed.fields.datahora,
+                        };
+                    });
+
+                    feedbacksFiltrados.forEach(function (feed) {
+                        var datahora = new Date(feed.datahora);
+                        $('#titulo').text(feed.titulo);
+                        $('#datahora2').text(datahora.toLocaleString());
+                        $('#area').text(feed.area);
+                        $('#local').text(feed.local);
+                        $('#descricao').text(feed.descricao);
+                        $('#status').text(feed.status);
+
+
+                        var cor;
+                        var status = feed.status;
+                        if (status == "Não Respondida") {
+                            cor = 'blue';
+                        } else if (status == "Em Andamento") {
+                            cor = 'yellow';
+                        } else if (status == "Não Resolvido") {
+                            cor = 'red';
+                        } else if (status == "Resolvido") {
+                            cor = 'green';
+                        }
+                        document.getElementById('status').style.color = cor;
+
+                        var imagemElement = document.getElementById('imagem');
+
+                        if (feed.imagem != ''){
+                            var match = feed.imagem.match(/\/([^/]+)\.(\w+)$/);
+                            imagemElement.src = nomeArquivo ? '{% static "img" %}' + match[0] : '';
+                            imagemElement.parentElement.style.textAlign = 'center';
+                        } else {
+                            imagemElement.alt = 'Usuário não enviou foto';
+                            imagemElement.src = '';
+                        }
+                    });
+                
+                },
+                error: function (error) {
+                    console.log("abla maiusculo");
+                }
+            });
+
+            document.getElementById('feedback_id').value = id;
+
+            // Faça uma requisição AJAX para obter os comentários e exibi-los
+            $.ajax({
+                url: '/obter_comentarios/' + id + '/',
+                type: 'GET',
+                success: function (data) {
+                    // Limpe os comentários_container
+                    $('#comentarios_container').empty();
+
+                    // Converta a string JSON de volta para um objeto JavaScript
+                    var comentarios = JSON.parse(data);
+
+                    // Mapeie os objetos para um novo array contendo apenas os campos desejados
+                    var comentariosFiltrados = comentarios.map(function (comentario) {
+                        return {
+                            comentario: comentario.fields.comentario,
+                            imagem: comentario.fields.imagem,
+                            datahora: comentario.fields.datahora,
+                            usuario: comentario.fields.usuario,
+                        };
+                    });
+
+                    // Adicione os comentários filtrados à div
+                    comentariosFiltrados.forEach(function (comentario) {
+                        var datahora = new Date(comentario.datahora);
+
+                        // Adiciona o comentário à div, limitando a 50 caracteres
+                        // var comentarioTexto = comentario.comentario.length > 20 ? comentario.comentario.substring(0, 20) + '...' : comentario.comentario;
+
+                        var divComentario = $('<div>').addClass('coment'); // Cria uma nova div para cada comentário
+                            if(comentario.comentario || comentario.imagem != ''){
+                                if (comentario.usuario == 2){
+                                    divComentario.append('<p id="tipo_usuario">adm</p>'); // Adiciona a hora à div
+                                } else if (comentario.usuario != 2){
+                                    divComentario.append('<p id="tipo_usuario">usuário_comum</p>'); // Adiciona a hora à div
+                                }
+                                divComentario.append('<p id="datahora">' + datahora.toLocaleString() + '</p>'); // Adiciona a hora à div
+                                
+                                if (comentario.comentario != '-' && comentario.comentario){
+                                    divComentario.append('<p id="comentario_texto">' + comentario.comentario + '</p>'); // Adiciona o comentário à div
+                                }
+                                if (comentario.imagem != ''){
+                                    var match = comentario.imagem.match(/\/([^/]+)\.(\w+)$/);
+                                    // imagemElement.parentElement.style.textAlign = 'center';
+                                    divComentario.append('<img id="coment_imagem" src="{% static "coment/img" %}/' + match[0] + '">');
+                                    divComentario.addClass('coment_com_imagem');
+                                }
+                        }
+                        $('#comentarios_container').append(divComentario); // Adiciona a div à div principal
+                    });
+                },
+                error: function (error) {
+                    console.log("abla");
+                }
+            });
+
+            var cor;
+            if (status == "Não Respondida") {
+                cor = 'blue';
+            } else if (status == "Em Andamento") {
+                cor = 'yellow';
+            } else if (status == "Não Resolvido") {
+                cor = 'red';
+            } else if (status == "Resolvido") {
+                cor = 'green';
+            }
+            document.getElementById('status').style.color = cor;
+        }
+
+        function salvarComentario() {
+            var form = $('#form')[0];
+            var formData = new FormData(form);
+
+            if (verificar() == 1){
+                $.ajax({
+                    url: '/salvar_comentario/',  // Substitua pela sua URL de salvamento
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        console.log('Comentário salvo com sucesso!');
+                        // Adicione aqui qualquer lógica adicional após o sucesso
+                    },
+                    error: function (error) {
+                        console.error('Erro ao salvar o comentário:', error);
+                    }
+                });
             }
         }
 
-        document.getElementById('titulo').textContent = titulo;
-        document.getElementById('datahora').textContent = time;
-        document.getElementById('area').textContent = area;
-        document.getElementById('local').textContent = local;
-        document.getElementById('status').textContent = status;
-        document.getElementById('descricao').textContent = descricao;
+        // Adicione um manipulador de eventos para o envio do formulário
+        $(document).ready(function () {
+            $('#form').submit(function (event) {
+                event.preventDefault(); // Impede o envio padrão do formulário
+                salvarComentario(); // Chama a função para enviar o formulário via AJAX
+            });
+        });
 
-        if (status == "Não Respondida") {
-            cor = 'blue';
-        } else if (status == "Em Andamento") {
-            cor = 'yellow';
-        } else if (status == "Não Resolvido") {
-            cor = 'red';
-        } else if (status == "Resolvido") {
-            cor = 'green';
-        }
-        document.getElementById('status').style.color = cor;
-    }
-        
-        function fecharModal() {
-            var modal = document.getElementById('Details');
+        function fecharModal(modal) {
+            var modal = document.getElementById(modal);
             modal.style.display = 'none';
         }
 
         window.onload = function () {
-            var historic = document.getElementById('historic');
-            var status = historic.querySelectorAll('.status')
+            var textinho = document.querySelectorAll('.textinho')
+            textinho.forEach(function (element) {
+                var texto = element.textContent;
+                element.textContent = limitarCaracteres(texto, 8);
+            })
+
+            var status = document.querySelectorAll('.status')
             status.forEach(function (element) {
                 var cor;
                 var texto = element.textContent;
@@ -238,6 +558,7 @@
                     cor = 'green';
                 }
                 element.style.color = cor;
+                element.textContent = "\u2022";
             })
         }
 
@@ -248,16 +569,50 @@
         // Essa função será chamada quando o formulário for enviado para atualizar os campos hidden.
         function atualizarCamposHidden() {
 
-        arrayP.length = 0;
-        // Obtenha todos os campos do formulário
-        var formElements = document.querySelectorAll('form .questao');
+            arrayP.length = 0;
+            // Obtenha todos os campos do formulário
+            var formElements = document.querySelectorAll('form .questao');
 
-        // Itere pelos campos e adicione as informações aos arrays
-        formElements.forEach(function (element) {
-            arrayP.push(element.id)
-        });
-        document.getElementById("arrayP").value = JSON.stringify(arrayP);
-    }
+            // Itere pelos campos e adicione as informações aos arrays
+            formElements.forEach(function (element) {
+                arrayP.push(element.id)
+            });
+            document.getElementById("arrayP").value = JSON.stringify(arrayP);
+        }
+
+        function verificar(){
+            var formElements = document.querySelectorAll('.verificacao');
+            var cont=0;
+
+            console.log('to ki')
+            formElements.forEach(function (element) {
+                if(element.value == ''){
+                    cont = cont + 1;
+                }
+            });
+            if (cont == 2) {
+                alert('Insira alguma informação de texto ou imagem');
+                return 0; // Isso interrompe o envio do formulário
+            }
+
+            return 1; // Permite o envio do formulário se não houver problema
+        }
+
+        function abrirCamera() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function (stream) {
+                    var video = document.createElement('video');
+                    video.srcObject = stream;
+                    video.autoplay = true;
+                    
+                    // Adicione o elemento de vídeo à sua página ou exiba em um modal
+                    document.body.appendChild(video);
+                })
+                .catch(function (error) {
+                    console.error('Erro ao acessar a câmera:', error);
+                    alert('Não foi possível acessar a câmera. Verifique se sua página está sendo carregada em um ambiente seguro (HTTPS) ou localhost.');
+                });
+        }
 </script>
 </body>
 

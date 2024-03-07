@@ -114,7 +114,8 @@ class usuario(models.Model):
         return self.nome
 
 class comentario(models.Model):
-    comentario = models.TextField(null=True, verbose_name="Comentário")
+    comentario = models.TextField(null=True, verbose_name="Comentário", blank=True)
+    imagem = models.ImageField(upload_to='feedback/static/coment/img', null=True, blank=True, verbose_name="Imagem")
     usuario = models.ForeignKey(usuario, on_delete=models.DO_NOTHING)
     datahora = models.DateTimeField(null=True, auto_now_add=True)
     feedback_id = models.ForeignKey(feedback, on_delete=models.CASCADE)

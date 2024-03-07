@@ -11,23 +11,56 @@ from django.views.decorators.csrf import csrf_exempt
 
 
 # Create your views here.
-def home(request):
+def home(request, cod = None):
     u_questionario = questionario.objects.get()
     quests = questao.objects.filter(questionario_id=u_questionario)
     areas = area.objects.all()
     locais = local.objects.all()
     historic = feedback.objects.all()
-    
+
+    # Defina hoje como o dia atual
+    hoje = datetime.today().date().strftime('%d/%m/%Y')
+    if cod is not None:
+        Eadm = True
+        if cod == 0:
+            mails = feedback.objects.all()
+        else:
+            mails = feedback.objects.filter(area = cod)
+        
+        return render(
+            request,
+            "index_feedback.html",
+            {'u_questionario': u_questionario,
+             'quests': quests,
+             'areas': areas,
+             'locais': locais,
+             'mails': mails,
+             'historic': historic,
+             'hoje': hoje,
+             'Eadm': Eadm}
+        )
+    else:
+        Eadm = False
+
+        return render(
+            request,
+            "index_feedback.html",
+            {'u_questionario': u_questionario,
+             'quests': quests,
+             'areas': areas,
+             'locais': locais,
+             'historic': historic,
+             'hoje': hoje,
+             'Eadm': Eadm}
+        )
     # historic = feedback.objects.filter(user_id=$_SESSION['id'])
-    
-    return redirect(reverse('ver_form', args=[0]))
 
 def salvarAnswer(request):
     try:
         # Decodificar os arrays do JSON
         array_pergunta = json.loads(request.POST.get("arrayP"))
 
-        campos = ["titulo", "area", "local", "descricao"]
+        campos = ["titulo", "area", "local", "descricao", "imagem"]
         Status = status.objects.get(status="Não Respondida")
 
         fb = feedback(status = Status)
@@ -43,6 +76,11 @@ def salvarAnswer(request):
                     print(f"A área com ID {a} não existe.")
                 except local.DoesNotExist:
                     print(f"O local com ID {a} não existe.")
+            elif c == "imagem":
+                # Verificar se há uma imagem no request.FILES
+                imagem = request.FILES.get(a)
+                if imagem:
+                    fb.imagem = imagem
             else:
                 inf = request.POST.get(a)
                 setattr(fb, c, inf)
@@ -53,7 +91,7 @@ def salvarAnswer(request):
 
         if rota == "adm":
             # Redirecione para a página de sucesso ou faça o que for necessário
-            return redirect(reverse('ver_form', args=[1]))
+            return redirect(reverse('home_with_cod', args=[0]))
         elif rota == "user":
             return redirect(home)
 
@@ -71,43 +109,6 @@ def get_feedback(request, id):
 
     # Retorne os dados como JSON
     return JsonResponse(feedback_list, safe=False)
-
-def ver_form(request, cod):
-    u_questionario = questionario.objects.get()
-    if cod == 0:
-        Eadm = False
-    else:
-        mails = feedback.objects.filter(area = cod)
-        Eadm = True
-    quests = questao.objects.filter(questionario_id=u_questionario)
-    areas = area.objects.all()
-    locais = local.objects.all()
-    historic = feedback.objects.all()
-    
-    # historic = feedback.objects.filter(user_id=$_SESSION['id'])
-    try:
-        return render(
-            request,
-            "pagina2.html",
-            {'u_questionario': u_questionario,
-             'quests': quests,
-             'areas': areas,
-             'locais': locais,
-             'mails': mails,
-             'historic': historic,
-             'Eadm': Eadm}
-        )
-    except:
-        return render(
-            request,
-            "pagina2.html",
-            {'u_questionario': u_questionario,
-             'quests': quests,
-             'areas': areas,
-             'locais': locais,
-             'historic': historic,
-             'Eadm': Eadm}
-        )
     
 def obter_feed(request, id):
     mails = feedback.objects.filter(area=id)
@@ -121,38 +122,33 @@ def modal_feedback(request, id):
 
 def salvar_comentario(request):
     if request.method == 'POST':
-        texto_comentario = request.POST.get('texto', '')
-        feedback_id = request.POST.get('feedbackId', '')
-        user = usuario.objects.get(nome=request.POST.get('usuario', ''))
+        texto_comentario = request.POST.get('texto')
+        imagem = request.FILES.get('coment_img')
 
-        novo_comentario = comentario(comentario=texto_comentario, usuario=user, feedback_id=feedback_id)
-        novo_comentario.save()
+        if texto_comentario != '-':
+            if imagem != '':
+                novo_comentario = comentario()
+                feedback_id = feedback.objects.get(id=request.POST.get('feedback_id'))
+                if texto_comentario != '-':
+                    novo_comentario.comentario = 'texto_comentario'
+                if imagem:
+                    novo_comentario.imagem = imagem
+                rota = request.POST.get('log2', '')
+                user = usuario.objects.get(nome=rota)
 
-        # Responda com um JSON
-        return JsonResponse({'status': 'success'})
-    else:
-        return JsonResponse({'status': 'error', 'message': 'Método inválido'})
+                # Crie o objeto de comentário e salve no banco de dados
+                setattr(novo_comentario, 'usuario', user)
+                setattr(novo_comentario, 'feedback_id', feedback_id)
+                novo_comentario.save()
+            else:
+                return HttpResponse("Erro: Insira alguma informação")
+        else:
+            return HttpResponse("Erro: Insira alguma informação")
+
+    # Em caso de método GET ou outros casos, você pode lidar conforme necessário
+    return HttpResponse("Erro: Método não suportado ou dados ausentes.")
 
 def obter_comentarios(request, id):
     comentarios = comentario.objects.filter(feedback_id=id)
     comentarios_serializados = serialize('json', comentarios)
     return JsonResponse(comentarios_serializados, safe=False)
-    
-@csrf_exempt
-def salvar_comentario(request):
-    if request.method == 'POST':
-        texto_comentario = request.POST.get('texto', '')
-        feedback_id = request.POST.get('feedback_id', '')
-        rota = request.POST.get('log2', '')
-        
-        # Se você tiver uma lógica para determinar o usuário (rota) aqui, ajuste conforme necessário
-        user = Usuario.objects.get(nome=rota)
-
-        # Crie o objeto de comentário e salve no banco de dados
-        novo_comentario = Comentario(comentario=texto_comentario, usuario=user, feedback_id=feedback_id)
-        novo_comentario.save()
-
-        # Redirecione para a página de sucesso ou faça o que for necessário
-        return JsonResponse({'message': 'Comentário salvo com sucesso!'})
-
-    return JsonResponse({'error': 'Método inválido'}, status=400)

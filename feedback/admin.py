@@ -20,7 +20,7 @@ def link_resposta(obj):
             '<a style="color: lightblue; text-decoration: underline;" href="{}" target="_blank">'
             'Visualizar Respostas'
             '</a>',
-            reverse('ver_form', args=[1]),
+            reverse('home_with_cod', args=[0]),
         )
 
 class QuestionarioAdmin(nested_admin.NestedModelAdmin):
@@ -50,7 +50,7 @@ class QuestaoAdmin(admin.ModelAdmin):
     list_display = ('id', 'titulo')
 
 class ComentarioAdmin(admin.ModelAdmin):
-    list_display = ('id', 'comentario', 'datahora', 'feedback_id')
+    list_display = ('id', 'comentario', 'imagem','datahora', 'usuario','feedback_id')
 
 class ComentarioInline(admin.TabularInline):  # Use admin.StackedInline se preferir exibição empilhada
     fields = ('comentario', 'usuario', 'datahora')

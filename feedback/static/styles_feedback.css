@@ -204,13 +204,25 @@ section.hide {
     margin-top: 20px;
 }
 
+#comentarios_container .coment_com_imagem{
+    margin-bottom: 20px;
+}
+
 .coment {
     display: flex;
     flex-direction: column;
     align-items: start;
     justify-content: center;
-    width: 80%;
+    width: 100%;
     position: relative;
+}
+
+.coment_com_imagem #datahora{
+    top: 30%;
+}
+
+.coment_com_imagem #tipo_usuario{
+    bottom: 30%;
 }
 
 #comentario_texto{
@@ -218,6 +230,15 @@ section.hide {
     border-radius: 10px;
     padding: 0.6% 2% 1% 1%;
 }
+
+#coment_imagem{
+    max-width: 40%;
+    text-align: center;
+    background-color: var(--complementary-color);
+    padding: 15px;
+    border-radius: 15px;
+}
+
 
 #datahora {
     position: absolute;
@@ -285,20 +306,17 @@ section.hide {
     .informacoes {
         overflow-y: auto;
     }
-    
-    .coment {
-        display: flex;
-        flex-direction: column;
-        align-items: start;
-        justify-content: center;
-        width: 100%;
-        position: relative;
+
+    #comentarios_container .coment_com_imagem{
+        margin-bottom: 15px;
     }
     
-    #comentario_texto{
-        background-color: var(--complementary-color);
-        border-radius: 10px;
-        padding: 0.6% 2% 1% 1%;
+    .coment_com_imagem #datahora{
+        top: 0;
+    }
+
+    #coment_imagem{
+        max-width: 55%;
     }
     
     #datahora {
