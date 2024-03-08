@@ -125,25 +125,19 @@ def salvar_comentario(request):
         texto_comentario = request.POST.get('texto')
         imagem = request.FILES.get('coment_img')
 
+        novo_comentario = comentario()
+        feedback_id = feedback.objects.get(id=request.POST.get('feedback_id'))
         if texto_comentario != '-':
-            if imagem != '':
-                novo_comentario = comentario()
-                feedback_id = feedback.objects.get(id=request.POST.get('feedback_id'))
-                if texto_comentario != '-':
-                    novo_comentario.comentario = 'texto_comentario'
-                if imagem:
-                    novo_comentario.imagem = imagem
-                rota = request.POST.get('log2', '')
-                user = usuario.objects.get(nome=rota)
+            novo_comentario.comentario = texto_comentario
+        if imagem:
+            novo_comentario.imagem = imagem
+        rota = request.POST.get('log2', '')
+        user = usuario.objects.get(nome=rota)
 
-                # Crie o objeto de comentário e salve no banco de dados
-                setattr(novo_comentario, 'usuario', user)
-                setattr(novo_comentario, 'feedback_id', feedback_id)
-                novo_comentario.save()
-            else:
-                return HttpResponse("Erro: Insira alguma informação")
-        else:
-            return HttpResponse("Erro: Insira alguma informação")
+        # Crie o objeto de comentário e salve no banco de dados
+        setattr(novo_comentario, 'usuario', user)
+        setattr(novo_comentario, 'feedback_id', feedback_id)
+        novo_comentario.save()
 
     # Em caso de método GET ou outros casos, você pode lidar conforme necessário
     return HttpResponse("Erro: Método não suportado ou dados ausentes.")

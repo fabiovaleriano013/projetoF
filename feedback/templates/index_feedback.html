@@ -129,11 +129,11 @@ PARE -->
                                 <div class="input-group mb-3">
                                     <!-- <img src="caminho/para/a/imagem.jpg" alt="Foto da pessoa" class="img-fluid" /> -->
                                     <label for="coment_img" class="input-group-text bg-secondary text-light rounded-circle" style="cursor: pointer;">&#47;</label>
-                                    <input type="file" name="coment_img" id="coment_img" class="verificacao" accept="image/*" style="display: none;">
+                                    <input type="file" name="coment_img" id="coment_img" accept="image/*" style="display: none;">
 
                                     <label for="camera_img" class="input-group-text bg-secondary text-light rounded-circle" style="cursor: pointer;" onclick="abrirCamera()">📷</label>
 
-                                    <input type="text" class="form-control rounded-left verificacao" name="texto" id="texto" placeholder="Digite seu comentário" aria-label="Digite seu comentário" aria-describedby="button-addon">
+                                    <input type="text" class="form-control rounded-left" name="texto" id="texto" placeholder="Digite seu comentário" aria-label="Digite seu comentário" aria-describedby="button-addon">
                                     <input type="hidden" name="feedback_id" id="feedback_id">
                                     {% if Eadm %}
                                         <input type="hidden" name="log2" id="log2" value="adm">
@@ -356,6 +356,58 @@ PARE -->
         function limitarCaracteres(texto, limite) {
             return texto.length > limite ? texto.substring(0, limite) + '...' : texto;
         }
+
+        function carregarComentarios(id, env_com) {
+            $.ajax({
+                url: '/obter_comentarios/' + id + '/',
+                type: 'GET',
+                success: function (data) {
+                    $('#comentarios_container').empty();
+                    var comentarios = JSON.parse(data);
+                    var comentariosFiltrados = comentarios.map(function (comentario) {
+                        return {
+                            comentario: comentario.fields.comentario,
+                            imagem: comentario.fields.imagem,
+                            datahora: comentario.fields.datahora,
+                            usuario: comentario.fields.usuario,
+                        };
+                    });
+
+                    comentariosFiltrados.forEach(function (comentario) {
+                        var datahora = new Date(comentario.datahora);
+                        var divComentario = $('<div>').addClass('coment');
+                        if(comentario.comentario || comentario.imagem != ''){
+                            if (comentario.usuario == 2){
+                                divComentario.append('<p id="tipo_usuario">adm</p>');
+                            } else if (comentario.usuario != 2){
+                                divComentario.append('<p id="tipo_usuario">usuário_comum</p>');
+                            }
+                            divComentario.append('<p id="datahora">' + datahora.toLocaleString() + '</p>');
+
+                            if (comentario.comentario != '-' && comentario.comentario){
+                                divComentario.append('<p id="comentario_texto">' + comentario.comentario + '</p>');
+                            }
+                            if (comentario.imagem != ''){
+                                var match = comentario.imagem.match(/\/([^/]+)\.(\w+)$/);
+                                divComentario.append('<img id="coment_imagem" src="{% static "coment/img" %}/' + match[0] + '">');
+                                divComentario.addClass('coment_com_imagem');
+                            }
+                        }
+                        $('#comentarios_container').append(divComentario);
+
+                        if(env_com == true){
+                            $('.informacoes').scrollTop($('.informacoes')[0].scrollHeight);
+                        } else {
+                            $('.informacoes').scrollTop(0);
+                        }
+                    });
+                },
+                error: function (error) {
+                    console.log("Erro ao carregar comentários.");
+                }
+            });
+        }
+
         
         function showDetails(id) {
             var modal = document.getElementById('Details');
@@ -434,61 +486,8 @@ PARE -->
 
             document.getElementById('feedback_id').value = id;
 
-            // Faça uma requisição AJAX para obter os comentários e exibi-los
-            $.ajax({
-                url: '/obter_comentarios/' + id + '/',
-                type: 'GET',
-                success: function (data) {
-                    // Limpe os comentários_container
-                    $('#comentarios_container').empty();
-
-                    // Converta a string JSON de volta para um objeto JavaScript
-                    var comentarios = JSON.parse(data);
-
-                    // Mapeie os objetos para um novo array contendo apenas os campos desejados
-                    var comentariosFiltrados = comentarios.map(function (comentario) {
-                        return {
-                            comentario: comentario.fields.comentario,
-                            imagem: comentario.fields.imagem,
-                            datahora: comentario.fields.datahora,
-                            usuario: comentario.fields.usuario,
-                        };
-                    });
-
-                    // Adicione os comentários filtrados à div
-                    comentariosFiltrados.forEach(function (comentario) {
-                        var datahora = new Date(comentario.datahora);
-
-                        // Adiciona o comentário à div, limitando a 50 caracteres
-                        // var comentarioTexto = comentario.comentario.length > 20 ? comentario.comentario.substring(0, 20) + '...' : comentario.comentario;
-
-                        var divComentario = $('<div>').addClass('coment'); // Cria uma nova div para cada comentário
-                            if(comentario.comentario || comentario.imagem != ''){
-                                if (comentario.usuario == 2){
-                                    divComentario.append('<p id="tipo_usuario">adm</p>'); // Adiciona a hora à div
-                                } else if (comentario.usuario != 2){
-                                    divComentario.append('<p id="tipo_usuario">usuário_comum</p>'); // Adiciona a hora à div
-                                }
-                                divComentario.append('<p id="datahora">' + datahora.toLocaleString() + '</p>'); // Adiciona a hora à div
-                                
-                                if (comentario.comentario != '-' && comentario.comentario){
-                                    divComentario.append('<p id="comentario_texto">' + comentario.comentario + '</p>'); // Adiciona o comentário à div
-                                }
-                                if (comentario.imagem != ''){
-                                    var match = comentario.imagem.match(/\/([^/]+)\.(\w+)$/);
-                                    // imagemElement.parentElement.style.textAlign = 'center';
-                                    divComentario.append('<img id="coment_imagem" src="{% static "coment/img" %}/' + match[0] + '">');
-                                    divComentario.addClass('coment_com_imagem');
-                                }
-                        }
-                        $('#comentarios_container').append(divComentario); // Adiciona a div à div principal
-                    });
-                },
-                error: function (error) {
-                    console.log("abla");
-                }
-            });
-
+            carregarComentarios(id, false);
+            
             var cor;
             if (status == "Não Respondida") {
                 cor = 'blue';
@@ -505,8 +504,10 @@ PARE -->
         function salvarComentario() {
             var form = $('#form')[0];
             var formData = new FormData(form);
-
-            if (verificar() == 1){
+            texto = document.getElementById('texto').value;
+            coment_img = document.getElementById('coment_img').value;
+            
+            if (!(texto == '' && coment_img == '')){
                 $.ajax({
                     url: '/salvar_comentario/',  // Substitua pela sua URL de salvamento
                     type: 'POST',
@@ -516,12 +517,19 @@ PARE -->
                     success: function (data) {
                         console.log('Comentário salvo com sucesso!');
                         // Adicione aqui qualquer lógica adicional após o sucesso
+                        var id = document.getElementById('feedback_id').value;
+                        carregarComentarios(id, true);
+                        // Adicione esta linha para rolar o scroll para o topo do modal
+                        
                     },
                     error: function (error) {
                         console.error('Erro ao salvar o comentário:', error);
                     }
                 });
+            } else {
+                alert('Insira alguma informação em texto ou imagem');
             }
+
         }
 
         // Adicione um manipulador de eventos para o envio do formulário
@@ -578,24 +586,6 @@ PARE -->
                 arrayP.push(element.id)
             });
             document.getElementById("arrayP").value = JSON.stringify(arrayP);
-        }
-
-        function verificar(){
-            var formElements = document.querySelectorAll('.verificacao');
-            var cont=0;
-
-            console.log('to ki')
-            formElements.forEach(function (element) {
-                if(element.value == ''){
-                    cont = cont + 1;
-                }
-            });
-            if (cont == 2) {
-                alert('Insira alguma informação de texto ou imagem');
-                return 0; // Isso interrompe o envio do formulário
-            }
-
-            return 1; // Permite o envio do formulário se não houver problema
         }
 
         function abrirCamera() {
