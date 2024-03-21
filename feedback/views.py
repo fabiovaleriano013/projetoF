@@ -8,73 +8,75 @@ from datetime import datetime
 import json
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import User
+from django.apps import apps
+from django.contrib.auth.decorators import login_required
 
-
-# Create your views here.
-def home(request, cod = None):
-    u_questionario = questionario.objects.get()
-    quests = questao.objects.filter(questionario_id=u_questionario)
-    areas = area.objects.all()
-    locais = local.objects.all()
-    historic = feedback.objects.all()
+@login_required
+def home_feedback(request):
+    u_questionario = Questionario.objects.get()
+    quests = Questao.objects.filter(questionario_id=u_questionario)
+    areas = Area.objects.all()
+    locais = Local.objects.all()
+    historic = Feedback.objects.all()
+    status = Status.objects.all()
 
     # Defina hoje como o dia atual
     hoje = datetime.today().date().strftime('%d/%m/%Y')
-    if cod is not None:
+
+    if request.user.is_superuser:
         Eadm = True
-        if cod == 0:
-            mails = feedback.objects.all()
-        else:
-            mails = feedback.objects.filter(area = cod)
+        mails = Feedback.objects.all()
         
-        return render(
-            request,
-            "index_feedback.html",
-            {'u_questionario': u_questionario,
+        context = {
+            'u_questionario': u_questionario,
              'quests': quests,
              'areas': areas,
              'locais': locais,
              'mails': mails,
              'historic': historic,
+             'status': status,
              'hoje': hoje,
-             'Eadm': Eadm}
-        )
+             'Eadm': Eadm
+        }
     else:
         Eadm = False
 
-        return render(
-            request,
-            "index_feedback.html",
-            {'u_questionario': u_questionario,
-             'quests': quests,
-             'areas': areas,
-             'locais': locais,
-             'historic': historic,
-             'hoje': hoje,
-             'Eadm': Eadm}
-        )
-    # historic = feedback.objects.filter(user_id=$_SESSION['id'])
+        context = {
+            'u_questionario': u_questionario,
+            'quests': quests,
+            'areas': areas,
+            'locais': locais,
+            'historic': historic,
+            'status': status,
+            'hoje': hoje,
+            'Eadm': Eadm,
+        }
+    
+    return render(request, "index_feedback.html", context)
+    
+    # historic = Feedback.objects.filter(user_id=$_SESSION['id'])
 
 def salvarAnswer(request):
     try:
         # Decodificar os arrays do JSON
         array_pergunta = json.loads(request.POST.get("arrayP"))
 
-        campos = ["titulo", "area", "local", "descricao", "imagem"]
-        Status = status.objects.get(status="Não Respondida")
+        campos = ["area", "local", "descricao", "imagem"]
+        status = Status.objects.get(status="Não Respondida")
 
-        fb = feedback(status = Status)
+        fb = Feedback(status=status)
         for a, c in zip(array_pergunta, campos):
             if c == "area" or c == "local":
                 try:
                     if c == "area":
-                        instance = area.objects.get(id=request.POST.get(a))
+                        instance = Area.objects.get(id=request.POST.get(a))
                     else:
-                        instance = local.objects.get(id=request.POST.get(a))
+                        instance = Local.objects.get(id=request.POST.get(a))
                     setattr(fb, c, instance)
-                except area.DoesNotExist:
+                except Area.DoesNotExist:
                     print(f"A área com ID {a} não existe.")
-                except local.DoesNotExist:
+                except Local.DoesNotExist:
                     print(f"O local com ID {a} não existe.")
             elif c == "imagem":
                 # Verificar se há uma imagem no request.FILES
@@ -87,13 +89,7 @@ def salvarAnswer(request):
 
         fb.save()
 
-        rota = request.POST.get("log")
-
-        if rota == "adm":
-            # Redirecione para a página de sucesso ou faça o que for necessário
-            return redirect(reverse('home_with_cod', args=[0]))
-        elif rota == "user":
-            return redirect(home)
+        return redirect(home_feedback)
 
     except Exception as e:
         # Em caso de erro, redirecione para uma página de erro
@@ -104,38 +100,43 @@ def salvarAnswer(request):
         return render(request, "index_feedback.html", {"error_message": error_message})
 
 def get_feedback(request, id):
-    # Faça a consulta no banco de dados
-    feedback_list = feedback.objects.filter(area=id)
-
-    # Retorne os dados como JSON
-    return JsonResponse(feedback_list, safe=False)
+    feedback_list = Feedback.objects.filter(area=id).select_related('area', 'local')
+    feedback_list_serializados = serialize('json', feedback_list, use_natural_foreign_keys=True)
+    return JsonResponse(feedback_list_serializados, safe=False)
     
 def obter_feed(request, id):
-    mails = feedback.objects.filter(area=id)
-    mails_serializados = serialize('json', mails)
+    mails = Feedback.objects.filter(area=id).select_related('area', 'local')
+    mails_serializados = serialize('json', mails, use_natural_foreign_keys=True)
     return JsonResponse(mails_serializados, safe=False)
 
 def modal_feedback(request, id):
-    feed = feedback.objects.filter(id=id)
-    feed_serializados = serialize('json', feed)
+    feed = Feedback.objects.filter(id=id).select_related('area', 'local')
+    feed_serializados = serialize('json', feed, use_natural_foreign_keys=True)
     return JsonResponse(feed_serializados, safe=False)
 
+@login_required
 def salvar_comentario(request):
     if request.method == 'POST':
         texto_comentario = request.POST.get('texto')
         imagem = request.FILES.get('coment_img')
 
-        novo_comentario = comentario()
-        feedback_id = feedback.objects.get(id=request.POST.get('feedback_id'))
+        novo_comentario = Comentario()
+        feedback_id = Feedback.objects.get(id=request.POST.get('feedback_id'))
         if texto_comentario != '-':
             novo_comentario.comentario = texto_comentario
         if imagem:
             novo_comentario.imagem = imagem
-        rota = request.POST.get('log2', '')
-        user = usuario.objects.get(nome=rota)
+            
+        # Verifique se o usuário existe
+        # usuario_logado = User.objects.get(id=request.user.id)
+        
+        if request.user.is_superuser:
+            usuario_logado = Usuario.objects.get(nome='admin')
+        else:
+            usuario_logado = Usuario.objects.get(nome='usuario_comum')
 
         # Crie o objeto de comentário e salve no banco de dados
-        setattr(novo_comentario, 'usuario', user)
+        novo_comentario.usuario = usuario_logado
         setattr(novo_comentario, 'feedback_id', feedback_id)
         novo_comentario.save()
 
@@ -143,6 +144,6 @@ def salvar_comentario(request):
     return HttpResponse("Erro: Método não suportado ou dados ausentes.")
 
 def obter_comentarios(request, id):
-    comentarios = comentario.objects.filter(feedback_id=id)
-    comentarios_serializados = serialize('json', comentarios)
+    comentarios = Comentario.objects.filter(feedback_id=id).select_related('usuario')
+    comentarios_serializados = serialize('json', comentarios, use_natural_foreign_keys=True)
     return JsonResponse(comentarios_serializados, safe=False)

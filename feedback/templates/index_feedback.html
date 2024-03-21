@@ -2,39 +2,6 @@
 <html lang="pt-br">
 {% load static %}
 
-
-
-
-
-
-<!-- e15 = 1
-e14 = 1
-
-e13 = 1
-e12 = 1
-
-
-imp e13 = 1
-
-2-)
-LG e15
-COP e15 e12
-e14 = 1
-SE e12 = 1 e8
-SUB e12 e14 e12
-MUL e15 e12 e15
-VA e4
-IMP e15
-PARE -->
-
-
-
-
-
-
-
-
-
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -54,7 +21,7 @@ PARE -->
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <title>Responder Questionário</title>
+    <title>Col@bore!</title>
     <style>
         input[type="radio"] {
             border: 2px solid black;
@@ -70,20 +37,20 @@ PARE -->
             <span class="navbar-toggler-icon"></span>
         </button>
         <a class="navbar-brand me-0 me-md-auto fw-bold" href="#">
-            Feedback
+            Col@bore!
         </a>
         <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav mx-auto">
                 <li class="nav-item">
-                    <a onclick="showSection('feedback')"><i class="uil uil-file-search-alt"></i></a>
+                    <a onclick="showSection('feedback')"><i id="icone_feedback" class="uil uil-file-search-alt icone"></i></a>
                 </li>
                 {% if Eadm %}
                 <li class="nav-item">
-                    <a onclick="showSection('mail')"><i class="uil uil-envelope"></i></a>
+                    <a onclick="showSection('mail')"><i id="icone_mail" class="uil uil-envelope icone"></i></a>
                 </li>
                 {% endif %}
                 <li class="nav-item">
-                    <a id="loadData" onclick="showSection('historic')"><i class="uil uil-copy-landscape"></i></a>
+                    <a id="loadData" onclick="showSection('historic')"><i id="icone_historic" class="uil uil-copy-landscape icone"></i></a>
                 </li>
             </ul>
             <div class="col-12 col-md-2 text-md-end">
@@ -113,10 +80,19 @@ PARE -->
                         <p id="local"></p>
                         <h5>Descrição</h5>
                         <p id="descricao"></p>
-                        <h5>Status</h5>
-                        <ul>
-                            <li id="status"></li>
-                        </ul>
+                        <h5 id="status_titulo">Status</h5>
+                        {% if Eadm %}
+                            <select name="select_status" id="select_status" class="form-select" onchange="newStatus()">
+                                {% for s in status %}
+                                    <option value="{{ s.id }}">{{ s.status }}</option>
+                                {% endfor %}
+                            </select>
+                            <button onclick="newStatus()">Novo Status</button>
+                        {% else %}
+                            <ul>
+                                <li id="status"></li>
+                            </ul>
+                        {% endif %}
                         <div class="imagem">
                             <h5>Imagem</h5>
                             <img id="imagem">
@@ -128,18 +104,11 @@ PARE -->
                             <div class="comentario">
                                 <div class="input-group mb-3">
                                     <!-- <img src="caminho/para/a/imagem.jpg" alt="Foto da pessoa" class="img-fluid" /> -->
-                                    <label for="coment_img" class="input-group-text bg-secondary text-light rounded-circle" style="cursor: pointer;">&#47;</label>
+                                    <label for="coment_img" class="input-group-text bg-secondary text-light rounded-circle" style="cursor: pointer;">📷</label>
                                     <input type="file" name="coment_img" id="coment_img" accept="image/*" style="display: none;">
-
-                                    <label for="camera_img" class="input-group-text bg-secondary text-light rounded-circle" style="cursor: pointer;" onclick="abrirCamera()">📷</label>
 
                                     <input type="text" class="form-control rounded-left" name="texto" id="texto" placeholder="Digite seu comentário" aria-label="Digite seu comentário" aria-describedby="button-addon">
                                     <input type="hidden" name="feedback_id" id="feedback_id">
-                                    {% if Eadm %}
-                                        <input type="hidden" name="log2" id="log2" value="adm">
-                                    {% else %}
-                                        <input type="hidden" name="log2" id="log2" value="usuario_comum">
-                                    {% endif %}
                                     <button class="btn btn-outline-secondary" type="submit" id="button-addon">Enviar</button>
                                 </div>
                             </div>
@@ -147,6 +116,8 @@ PARE -->
                     </div>
                 </div>
             </div>
+
+            {% if u_questionario %}
 
             <section id='feedback' class="form-container">
                 <form method="POST" action="{% url 'salvarAnswer' %}" class="p-4" onsubmit="atualizarCamposHidden()" enctype="multipart/form-data">
@@ -185,11 +156,6 @@ PARE -->
                     </div>
                     {% endfor %}
                     <input type="hidden" name="arrayP" id="arrayP" value="">
-                    {% if Eadm %}
-                    <input type="hidden" name="log" id="log" value="adm">
-                    {% else %}
-                    <input type="hidden" name="log" id="log" value="user">
-                    {% endif %}
                     <div class="d-flex flex-column align-items-center">
                         <button type="submit" class="btn btn-primary">Enviar Resposta</button>
                     </div>
@@ -197,20 +163,20 @@ PARE -->
             </section>
 
             {% if Eadm %}
-            <section id='mail' class="flex-column align-items-center gap-4 hide">
-                <select name="area" id="areaId" onchange="myFunction()">
+            <section id='mail' class="flex-column align-items-center gap-3 hide">
+                <select name="area" id="areaId" class="form-select" onchange="myFunction()">
                     <option value=""></option>
                     {% for area in areas %}
                         <option value="{{ area.id }}">{{ area.area }}</option>
                     {% endfor %}
                 </select>
-                        <div id="feedback-list" class="gap-1 feedback-list">
+                        <div id="feedback-list" class="gap-2 feedback-list">
                             {% if mails %}
                             {% for mail in mails %}
                             <div class="d-flex card2" 
                             onclick="showDetails('{{mail.id}}')">
                                 <p class="status">{{ mail.status }}</p>
-                                <h4 class="textinho" >{{ mail.titulo }}</h4>
+                                <h4 class="textinho" >{{ mail.area }} - {{ mail.local }}</h4>
                                 <p class="textinho">{{ mail.descricao }}</p>
                                 {% if mail.datahora|date:'d/m/Y' == hoje %}
                                     <p>{{ mail.datahora|time:'H:i' }}</p>
@@ -228,13 +194,14 @@ PARE -->
                         
 
             <section id='historic' class="flex-column align-items-center gap-3 hide">
-                <div class="gap-1 feedback-list">
+                <h1>Histórico</h1>
+                <div class="gap-2 feedback-list">
                 {% if historic %}
                 {% for h in historic %}
                 <div class="d-flex card2"
-                onclick="showDetails('{{h.id}}', '{{h.titulo}}', '{{h.datahora}}', '{{h.area}}', '{{h.local}}', '{{h.status}}', '{{h.descricao}}', '{{h.imagem}}')">
+                onclick="showDetails('{{h.id}}')">
                     <p class="status">{{h.status}}</p>
-                    <h4 class="textinho" >{{ h.titulo }}</h4>
+                    <h4 class="textinho" >{{ h.area }} - {{ h.local }}</h4>
                     <p class="textinho">{{ h.descricao }}</p>
                     {% if h.datahora|date:'d/m/Y' == hoje %}
                         <p>{{ h.datahora|time:'H:i' }}</p>
@@ -248,6 +215,13 @@ PARE -->
                 {% endif %}
                 </div>
             </section>
+
+            {% else %}
+
+            <h1>Não há um questionário formulado</h1>
+
+            {% endif %}
+
     </main>
 
 
@@ -268,7 +242,19 @@ PARE -->
                     sectionElement.classList.add('hide');
                 }
             });
+            icones = document.querySelectorAll('.icone');
+            icone_id = 'icone_' + section;
+            icones.forEach(function (iconeElement) {
+                if (iconeElement.id === icone_id) {
+                    iconeElement.style.backgroundColor = '#1952706e';
+                } else {
+                    iconeElement.style.backgroundColor = 'transparent';
+                }
+            });
+
         }
+
+        
 
         var hoje = new Date();
         var options = {year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric'};
@@ -278,7 +264,7 @@ PARE -->
 
             // Faça uma requisição AJAX para obter os comentários e exibi-los
             $.ajax({
-                url: '/obter_feed/' + x + '/',
+                url: '/feedback/obter_feed/' + x + '/',
                 type: 'GET',
                 success: function (data) {
                     // Limpe os comentários_container
@@ -292,60 +278,79 @@ PARE -->
                         return {
                             id: mail.pk,
                             area: mail.fields.area,
+                            local: mail.fields.local,
                             datahora: mail.fields.datahora,
                             descricao: mail.fields.descricao,
-                            status: mail.fields.status,
-                            titulo: mail.fields.titulo
+                            status: mail.fields.status
                         };
                     });
 
-                    // Adicione os comentários filtrados à div
-                    mailsFiltrados.forEach(function (mail) {
-                        var datahora = new Date(mail.datahora);
+                    // Verifique se a lista de "mails" está vazia
+                    if (mailsFiltrados.length === 0) {
+                        // Crie a tag h1 com a mensagem
+                        var mensagem = document.createElement('h1');
+                        mensagem.textContent = 'Você ainda não recebeu nenhum feedback';
 
-                        // Adiciona o comentário à div, limitando a 50 caracteres
-                        // var comentarioTexto = comentario.comentario.length > 20 ? comentario.comentario.substring(0, 20) + '...' : comentario.comentario;
-                        var divCard = document.createElement('div');
-                        divCard.className = 'd-flex card2';
-                        divCard.onclick = function() {
-                            showDetails(mail.id);
-                        };
+                        // Adicione a mensagem à div de feedback-list
+                        var container = document.getElementById('feedback-list');
+                        container.appendChild(mensagem);
+                    } else {
+                        // Adicione os comentários filtrados à div
+                        mailsFiltrados.forEach(function (mail) {
+                            var datahora = new Date(mail.datahora);
 
-                        ['p', 'h4', 'p', 'p'].forEach(function(tag, index) {
-                            var element = document.createElement(tag);
-                            element.className = (index === 0) ? 'status' : (index <= 2) ? 'textinho' : '';
-                            
-                            if (index === 0) {
-                                var cor;
-                                var texto = mail.status;
-                                if (texto == "2") {
-                                    cor = 'blue';
-                                } else if (texto == "1") {
-                                    cor = 'yellow';
-                                } else if (texto == "3") {
-                                    cor = 'red';
-                                } else if (texto == "4") {
-                                    cor = 'green';
+                            // Adiciona o comentário à div, limitando a 50 caracteres
+                            // var comentarioTexto = comentario.comentario.length > 20 ? comentario.comentario.substring(0, 20) + '...' : comentario.comentario;
+                            var divCard = document.createElement('div');
+                            divCard.className = 'd-flex card2';
+                            divCard.onclick = function() {
+                                showDetails(mail.id);
+                            };
+
+                            ['p', 'h4', 'p', 'p'].forEach(function(tag, index) {
+                                var element = document.createElement(tag);
+                                element.className = (index === 0) ? 'status' : (index <= 2) ? 'textinho' : '';
+                                
+                                if (index === 0) {
+                                    var cor;
+                                    var texto = mail.status;
+                                    if (texto == "Não Respondida") {
+                                        cor = 'blue';
+                                    } else if (texto == "Em Andamento") {
+                                        cor = 'yellow';
+                                    } else if (texto == "Não Resolvido") {
+                                        cor = 'red';
+                                    } else if (texto == "Resolvido") {
+                                        cor = 'green';
+                                    }
+                                    element.textContent = "\u2022";
+                                    element.style.color = cor;
+                                } else if (index === 1) {
+                                    element.textContent = mail.area + " - " + mail.local;
+                                    var texto = element.textContent;
+                                    var limiteCaracteres = (window.innerWidth > 768) ? 40 : 18; // Verifica o tamanho da tela
+                                    var textoSemParenteses = texto.replace(/\(.*?\)/g, '').trim();
+                                    var textoFinal = textoSemParenteses;
+
+                                    // Limita os caracteres do texto final
+                                    element.textContent = limitarCaracteres(textoFinal, limiteCaracteres);
+
+                                } else if (index === 2) {
+                                    var limiteCaracteres = (window.innerWidth > 768) ? 40 : 18; // Verifica o tamanho da tela
+                                    element.textContent = limitarCaracteres(mail.descricao, limiteCaracteres);
+                                } else {
+                                    element.textContent = (datahora.toLocaleDateString() === hoje.toLocaleDateString()) ? 
+                                    datahora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}) : 
+                                    datahora.toLocaleDateString();
                                 }
-                                element.textContent = "\u2022";
-                                element.style.color = cor;
-                            } else if (index === 1) {
-                                element.textContent = mail.titulo;
-                            } else if (index === 2) {
-                                element.textContent = mail.descricao;
-                            } else {
-                                console.log
-                                element.textContent = (datahora.toLocaleDateString() === hoje.toLocaleDateString()) ? 
-                                datahora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}) : 
-                                datahora.toLocaleDateString();
-                            }
-                            divCard.appendChild(element);
-                        });
+                                divCard.appendChild(element);
+                            });
 
-                        // Adicionar divCard ao seu contêiner HTML existente
-                        var container = document.getElementById('feedback-list');  // Substitua 'seuContainerId' pelo ID do seu contêiner
-                            container.appendChild(divCard);
-                    });
+                            // Adicionar divCard ao seu contêiner HTML existente
+                            var container = document.getElementById('feedback-list');  // Substitua 'seuContainerId' pelo ID do seu contêiner
+                                container.appendChild(divCard);
+                        });
+                    }
                 },
                 error: function (error) {
                     console.log("amor");
@@ -359,7 +364,7 @@ PARE -->
 
         function carregarComentarios(id, env_com) {
             $.ajax({
-                url: '/obter_comentarios/' + id + '/',
+                url: '/feedback/obter_comentarios/' + id + '/',
                 type: 'GET',
                 success: function (data) {
                     $('#comentarios_container').empty();
@@ -377,11 +382,9 @@ PARE -->
                         var datahora = new Date(comentario.datahora);
                         var divComentario = $('<div>').addClass('coment');
                         if(comentario.comentario || comentario.imagem != ''){
-                            if (comentario.usuario == 2){
-                                divComentario.append('<p id="tipo_usuario">adm</p>');
-                            } else if (comentario.usuario != 2){
-                                divComentario.append('<p id="tipo_usuario">usuário_comum</p>');
-                            }
+
+                            divComentario.append('<p id="tipo_usuario">' + comentario.usuario + '</p>');
+
                             divComentario.append('<p id="datahora">' + datahora.toLocaleString() + '</p>');
 
                             if (comentario.comentario != '-' && comentario.comentario){
@@ -401,13 +404,13 @@ PARE -->
                             $('.informacoes').scrollTop(0);
                         }
                     });
+
                 },
                 error: function (error) {
                     console.log("Erro ao carregar comentários.");
                 }
             });
         }
-
         
         function showDetails(id) {
             var modal = document.getElementById('Details');
@@ -418,12 +421,12 @@ PARE -->
                     modal.style.display = "none";
                 }
             }
-        
+
             document.getElementById('texto').value = '';
 
             // Faça uma requisição AJAX para obter os comentários e exibi-los
             $.ajax({
-                url: '/modal_feedback/' + id + '/',
+                url: '/feedback/modal_feedback/' + id + '/',
                 type: 'GET',
                 success: function (data) {
 
@@ -433,10 +436,9 @@ PARE -->
                     // Mapeie os objetos para um novo array contendo apenas os campos desejados
                     var feedbacksFiltrados = feedbacks.map(function (feed) {
                         return {
-                            titulo: feed.fields.titulo,
+                            descricao: feed.fields.descricao,
                             area: feed.fields.area,
                             local: feed.fields.local,
-                            descricao: feed.fields.descricao,
                             imagem: feed.fields.imagem,
                             status: feed.fields.status,
                             datahora: feed.fields.datahora,
@@ -445,14 +447,30 @@ PARE -->
 
                     feedbacksFiltrados.forEach(function (feed) {
                         var datahora = new Date(feed.datahora);
-                        $('#titulo').text(feed.titulo);
                         $('#datahora2').text(datahora.toLocaleString());
+                        $('#descricao').text(feed.descricao);
                         $('#area').text(feed.area);
                         $('#local').text(feed.local);
-                        $('#descricao').text(feed.descricao);
+
+                        {% if Eadm %}
+
+                        select = document.getElementById('select_status');
+                        var status = feed.status; // Obtenha o valor do status do template Django
+
+                        console.log(select)
+                        console.log(status)
+
+                        for (var i = 0; i < select.options.length; i++) {
+                            if (select.options[i].textContent === status) {
+                                console.log(select.options[i].textContentyy);
+                                select.options[i].selected = true; // Seleciona a opção com o status correspondente
+                                break;
+                            }
+                        }
+
+                        {% else %}
                         $('#status').text(feed.status);
-
-
+                            
                         var cor;
                         var status = feed.status;
                         if (status == "Não Respondida") {
@@ -465,12 +483,13 @@ PARE -->
                             cor = 'green';
                         }
                         document.getElementById('status').style.color = cor;
+                        {% endif %}
 
                         var imagemElement = document.getElementById('imagem');
 
                         if (feed.imagem != ''){
                             var match = feed.imagem.match(/\/([^/]+)\.(\w+)$/);
-                            imagemElement.src = nomeArquivo ? '{% static "img" %}' + match[0] : '';
+                            imagemElement.src = '{% static "img" %}' + match[0];
                             imagemElement.parentElement.style.textAlign = 'center';
                         } else {
                             imagemElement.alt = 'Usuário não enviou foto';
@@ -481,25 +500,36 @@ PARE -->
                 },
                 error: function (error) {
                     console.log("abla maiusculo");
+                    console.log(error)
                 }
             });
 
             document.getElementById('feedback_id').value = id;
 
             carregarComentarios(id, false);
-            
-            var cor;
-            if (status == "Não Respondida") {
-                cor = 'blue';
-            } else if (status == "Em Andamento") {
-                cor = 'yellow';
-            } else if (status == "Não Resolvido") {
-                cor = 'red';
-            } else if (status == "Resolvido") {
-                cor = 'green';
-            }
-            document.getElementById('status').style.color = cor;
         }
+
+        function newStatus() {
+    var novoStatus = document.getElementById('select_status').value;
+    var idFeedback = document.getElementById('feedback_id').value;
+
+    $.ajax({
+        url: '/atualizar_status/',
+        type: 'POST',
+        data: {
+            novoStatus: novoStatus,
+            idFeedback: idFeedback
+        },
+        success: function (data) {
+            console.log('Status atualizado com sucesso!');
+            // Adicione aqui qualquer lógica adicional após o sucesso
+        },
+        error: function (error) {
+            console.error('Erro ao atualizar o status:', error);
+        }
+    });
+}
+
 
         function salvarComentario() {
             var form = $('#form')[0];
@@ -509,13 +539,18 @@ PARE -->
             
             if (!(texto == '' && coment_img == '')){
                 $.ajax({
-                    url: '/salvar_comentario/',  // Substitua pela sua URL de salvamento
+                    url: '/fee  dback/salvar_comentario/',  // Substitua pela sua URL de salvamento
                     type: 'POST',
                     data: formData,
                     processData: false,
                     contentType: false,
                     success: function (data) {
                         console.log('Comentário salvo com sucesso!');
+                         // Limpar os campos de texto e imagem
+                        document.getElementById('texto').value = '';
+                        document.getElementById('coment_img').value = '';
+
+
                         // Adicione aqui qualquer lógica adicional após o sucesso
                         var id = document.getElementById('feedback_id').value;
                         carregarComentarios(id, true);
@@ -549,8 +584,15 @@ PARE -->
             var textinho = document.querySelectorAll('.textinho')
             textinho.forEach(function (element) {
                 var texto = element.textContent;
-                element.textContent = limitarCaracteres(texto, 8);
+                var limiteCaracteres = (window.innerWidth > 768) ? 40 : 18; // Verifica o tamanho da tela
+                var textoSemParenteses = texto.replace(/\(.*?\)/g, '').trim();
+                var textoFinal = textoSemParenteses;
+
+                // Limita os caracteres do texto final
+                element.textContent = limitarCaracteres(textoFinal, limiteCaracteres);
             })
+
+            document.getElementById('icone_feedback').style.backgroundColor = '#1952706e';            
 
             var status = document.querySelectorAll('.status')
             status.forEach(function (element) {

@@ -1,0 +1,12 @@
+arquivo .env
+
+SECRET_KEY='senhamuitosecreta'
+NAME_BANCO='pci_teste'
+USER_BANCO='postgres'
+PASSWORD_BANCO='123456'
+HOST_BANCO='localhost'
+PORT_BANCO='5432'
+
+py -m venv .venv
+cd .venv/scripts
+activate

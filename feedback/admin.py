@@ -11,7 +11,7 @@ from django.urls import reverse
 # Register your models here.
 
 class QuestaoInline(nested_admin.NestedStackedInline):
-    model = questao
+    model = Questao
     extra = 1
 
 def link_resposta(obj):
@@ -20,7 +20,7 @@ def link_resposta(obj):
             '<a style="color: lightblue; text-decoration: underline;" href="{}" target="_blank">'
             'Visualizar Respostas'
             '</a>',
-            reverse('home_with_cod', args=[0]),
+            reverse('home_feedback'),
         )
 
 class QuestionarioAdmin(nested_admin.NestedModelAdmin):
@@ -55,23 +55,31 @@ class ComentarioAdmin(admin.ModelAdmin):
 class ComentarioInline(admin.TabularInline):  # Use admin.StackedInline se preferir exibição empilhada
     fields = ('comentario', 'usuario', 'datahora')
     readonly_fields = ('datahora',)  # Adicione 'datahora' aqui
-    model = comentario
+    model = Comentario
     extra = 1  # Número de formulários em branco exibidos para novos Comentarios
 
 class FeedbackAdmin(admin.ModelAdmin):
-    list_display = ('titulo', 'descricao', 'datahora')
+    list_display = ('descricao', 'status', 'datahora')
     inlines = [ComentarioInline]
 
 class UsuarioAdmin(admin.ModelAdmin):
     list_display = ('id', 'nome', 'email')
 
-admin.site.register(feedback, FeedbackAdmin)
-admin.site.register(area)
-admin.site.register(local)
-admin.site.register(status, StatusAdmin)
-admin.site.register(comentario, ComentarioAdmin)
-admin.site.register(usuario, UsuarioAdmin)
+class AreaAdmin(admin.ModelAdmin):
+    list_display = ('id', 'area')
+    list_editable = ('area',)
 
-admin.site.register(questionario, QuestionarioAdmin)
-admin.site.register(tipo)
-admin.site.register(questao, QuestaoAdmin)
+class LocalAdmin(admin.ModelAdmin):
+    list_display = ('id', 'local')
+    list_editable = ('local',)
+
+admin.site.register(Feedback, FeedbackAdmin)
+admin.site.register(Area, AreaAdmin)
+admin.site.register(Local, LocalAdmin)
+admin.site.register(Status, StatusAdmin)
+admin.site.register(Comentario, ComentarioAdmin)
+admin.site.register(Usuario, UsuarioAdmin)
+
+admin.site.register(Questionario, QuestionarioAdmin)
+admin.site.register(Tipo)
+admin.site.register(Questao, QuestaoAdmin)

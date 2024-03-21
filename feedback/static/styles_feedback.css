@@ -28,10 +28,13 @@ main {
 
 .navbar-nav a {
     font-size: 40px;
-    color: #fff;
     text-decoration: none;
     padding: 20px;
     text-align: center;
+}
+
+.navbar-nav a i{
+    border-radius: 20px;
 }
 
 section {
@@ -95,7 +98,6 @@ section.hide {
 
 #historic {
     width: 100%;
-    margin: auto;
     overflow-y: auto;
 }
 
@@ -170,6 +172,7 @@ section.hide {
 
 .modal-content .informacoes {
     overflow-y: auto;
+    margin-top: 15px;
 }
 
 /* Estilos de rolagem */
@@ -263,7 +266,7 @@ section.hide {
     font-weight: bold;
     position: absolute;
     right: 20px;
-    top: 16px;
+    top: 10px;
     float: right;
 }
 
@@ -280,6 +283,12 @@ section.hide {
     .navbar-nav a {
         padding: 5px;
         text-align: center;
+    }
+
+    .navbar-nav a i{
+        border-radius: 0px;
+        clip-path: circle();
+        padding: 2%;
     }
 
     #feedback {
