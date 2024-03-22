@@ -1,2 +1,21 @@
 
 ajax refinosss
+
+SECRET_KEY='senhamuitosecreta'
+NAME_BANCO='pci_teste'
+USER_BANCO='postgres'
+PASSWORD_BANCO='123456'
+HOST_BANCO='localhost'
+PORT_BANCO='5432'
+
+discord presence
+github copilot
+github copilot chat
+
+
+gitlens
+gitkraken
+
+python debugger
+python pylance
+miccrosoft
