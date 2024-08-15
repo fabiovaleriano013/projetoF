@@ -1,8 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    transition: 2s ease, opacity;
+    font-family: 'Montserrat', sans-serif;
+    transition: 0.2s ease, opacity;
 }
 
 body {
@@ -10,6 +13,10 @@ body {
     width: 100%;
     display: flex;
     flex-direction: column;
+}
+
+input[type="radio"] {
+    border: 2px solid black;
 }
 
 :root {
@@ -27,14 +34,13 @@ main {
 }
 
 .navbar-nav a {
-    font-size: 40px;
     text-decoration: none;
-    padding: 20px;
     text-align: center;
+    padding: 20px;
 }
 
-.navbar-nav a i{
-    border-radius: 20px;
+.navbar-nav a i {
+    font-size: 40px;
 }
 
 section {
@@ -64,17 +70,20 @@ section.hide {
     max-height: fit-content;
 }
 
-#feedback form {
-    border-radius: 20px;
-    background-color: var(--complementary-color);
+.caixa-form {
+    border-top: 3px solid var(--container);
+    border-bottom: 3px solid var(--container);
+    border-left: 0.5px solid var(--container);
+    border-right: 0.5px solid var(--container);
+    border-radius: 10px;
+}
+
+#adc_feedback {
+    display: none;
 }
 
 #mail {
     width: 100%;
-}
-
-#areaId {
-    margin-top: 20px;
 }
 
 .feedback-list {
@@ -84,14 +93,17 @@ section.hide {
     overflow-y: auto;
     width: 100%;
     max-height: 100%;
+    margin-top: 10px;
 }
 
 /* Estilos de rolagem */
-.feedback-list::-webkit-scrollbar, #historic::-webkit-scrollbar {
+.feedback-list::-webkit-scrollbar,
+#historic::-webkit-scrollbar {
     width: 8px;
 }
 
-.feedback-list::-webkit-scrollbar-thumb, #historic::-webkit-scrollbar-thumb {
+.feedback-list::-webkit-scrollbar-thumb,
+#historic::-webkit-scrollbar-thumb {
     background-color: #aaa;
     border-radius: 10px;
 }
@@ -101,35 +113,19 @@ section.hide {
     overflow-y: auto;
 }
 
-.card2 {
-    justify-content: space-between;
-    align-items: center;
-    text-align: center;
+.card {
     cursor: pointer;
-    width: 95%;
-    position: relative;
-    
-    background-color: var(--complementary-color);
-    font-style: var(--container);
-    border-radius: 10px;
+    width: 85%;
+    border-radius: 15px;
     border: none;
-    padding: 0 10px 0 20px;
+    border: 1px solid var(--complementary-color);
+    
+    /* padding: 0 0 0 20px; */
 }
 
-.card2 p {
-    margin-bottom: 0;
-}
-
-.status{
-    position: absolute;
-    float: left;
-    left: 5px;
-}
-
-.perfil{
-    background-color: var(--complementary-color);
-    border-radius: 50%;
-    pointer-events: all;
+.status {
+    margin-left: 0px;
+    border-radius: 10px 0 0 10px;
 }
 
 /* The Modal (background) */
@@ -138,7 +134,7 @@ section.hide {
     /* Hidden by default */
     position: fixed;
     /* Stay in place */
-    z-index: 1;
+    z-index: 2;
     /* Sit on top */
     left: 0;
     top: 0;
@@ -173,6 +169,7 @@ section.hide {
 .modal-content .informacoes {
     overflow-y: auto;
     margin-top: 15px;
+    word-wrap: break-word;
 }
 
 /* Estilos de rolagem */
@@ -185,11 +182,15 @@ section.hide {
     border-radius: 10px;
 }
 
+.informacoes form {
+margin-top: 20px;
+}
+
 #titulo {
     width: 85%;
 }
 
-.modal-content .imagem h5{
+.modal-content .imagem h5 {
     text-align: left;
 }
 
@@ -198,17 +199,13 @@ section.hide {
     text-align: center;
 }
 
-#comentarios_container{
+#comentarios_container {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     width: 100%;
     margin-top: 20px;
-}
-
-#comentarios_container .coment_com_imagem{
-    margin-bottom: 20px;
 }
 
 .coment {
@@ -218,32 +215,35 @@ section.hide {
     justify-content: center;
     width: 100%;
     position: relative;
+
 }
 
-.coment_com_imagem #datahora{
+.coment_com_imagem .datahora {
     top: 30%;
 }
 
-.coment_com_imagem #tipo_usuario{
+.coment_com_imagem .tipo_usuario {
     bottom: 30%;
 }
 
-#comentario_texto{
-    background-color: var(--complementary-color);
+.caixa {
+    border-top: 1px solid var(--container);
+    border-bottom: 1px solid var(--container);
     border-radius: 10px;
-    padding: 0.6% 2% 1% 1%;
+    padding: 10px;
 }
 
-#coment_imagem{
-    max-width: 40%;
+.comentario_texto{
+    margin-bottom: 0;
+}
+
+.coment_imagem {
+    max-width: 100%;
     text-align: center;
-    background-color: var(--complementary-color);
-    padding: 15px;
-    border-radius: 15px;
 }
 
 
-#datahora {
+.datahora {
     position: absolute;
     top: 0;
     right: 5px;
@@ -251,9 +251,9 @@ section.hide {
     font-size: smaller;
 }
 
-#tipo_usuario {
+.tipo_usuario {
     position: absolute;
-    bottom: 0;
+    bottom: -15px;
     right: 5px;
     float: right;
     font-size: smaller;
@@ -279,16 +279,29 @@ section.hide {
 
 /* Estilos para telas menores (móveis) */
 @media only screen and (max-width: 768px) {
-    
+
     .navbar-nav a {
         padding: 5px;
         text-align: center;
     }
 
-    .navbar-nav a i{
+    .navbar-nav a i {
         border-radius: 0px;
-        clip-path: circle();
         padding: 2%;
+        font-size: 20px;
+    }
+
+    #adc_feedback {
+        display: block;
+        position: absolute;
+        right: 30px;
+        bottom: 30px;
+        padding: 4% 5%;
+        z-index: 1;
+    }
+
+    #icone_feedback {
+        display: none;
     }
 
     #feedback {
@@ -302,10 +315,16 @@ section.hide {
 
     #feedback .mb-3 {
         margin-bottom: 0.5em !important;
-    }   
-    
-    .card2 h4, .card2 p {
-        font-size: 0.95em;
+    }
+
+    .card {
+        /* justify-content: space-between; */
+        /* cursor: pointer; */
+        width: 75%;
+        border: none;
+
+        border: 1px solid var(--complementary-color);
+        padding: 0 10px 0 20px;
     }
 
     .modal-content #titulo {
@@ -316,27 +335,23 @@ section.hide {
         overflow-y: auto;
     }
 
-    #comentarios_container .coment_com_imagem{
+    #comentarios_container .coment_com_imagem {
         margin-bottom: 15px;
     }
-    
-    .coment_com_imagem #datahora{
+
+    .coment_com_imagem .datahora {
         top: 0;
     }
 
-    #coment_imagem{
-        max-width: 55%;
-    }
-    
-    #datahora {
+    .datahora {
         position: absolute;
         top: 0;
         right: 5px;
         float: right;
         margin-bottom: 3px;
     }
-    
-    #tipo_usuario {
+
+    .tipo_usuario {
         position: static;
         margin-bottom: 3px;
     }

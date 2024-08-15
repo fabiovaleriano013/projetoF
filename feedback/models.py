@@ -2,6 +2,17 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 
+import os
+
+# Função que adiciona as imagens do feedback dinamicamente na pasta static/img do app
+def image_upload_path(instance, filename):
+    # Obtém o nome do app do modelo
+    app_label = instance._meta.app_label
+    # Constrói o caminho de upload. Você pode modificar isso conforme necessário.
+    upload_path = os.path.join('apps', app_label, 'static', 'img', filename)
+    print(upload_path)
+    return upload_path
+
 class Questionario(models.Model):
     nome = models.CharField(max_length=255 ,null=True)
     # owner = models.CharField(max_length=50, null=True, verbose_name="Criado_por")
@@ -98,9 +109,10 @@ class Feedback(models.Model):
     area = models.ForeignKey(Area, on_delete=models.DO_NOTHING, verbose_name="Área")
     local = models.ForeignKey(Local, on_delete=models.DO_NOTHING, verbose_name="Local")
     descricao = models.TextField(max_length=255, null=True, verbose_name="Descrição")
-    imagem = models.ImageField(upload_to='apps/feedback/static/img/', null=True, blank=True, verbose_name="Imagem")
+    imagem = models.ImageField(upload_to=image_upload_path, null=True, blank=True, verbose_name="Imagem")
     status = models.ForeignKey(Status, on_delete=models.DO_NOTHING, verbose_name="Status")
     datahora = models.DateTimeField(null=True, auto_now_add=True, verbose_name="Data e Hora")
+    quantidade = models.IntegerField(blank=True, null=True, verbose_name="Quantidade")
     # userId = models.ForeignKey(Tabela_Usuario, on_delete=models.CASCADE)
     
     class Meta:

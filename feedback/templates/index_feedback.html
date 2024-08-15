@@ -1,651 +1,821 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+{% extends 'base_feedback.html' %}
+
 {% load static %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block content %}
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{% static 'styles_feedback.css' %}">
-    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.0/css/line.css">
+{% if error_message %}
+<script>
+    alert("{{ error_message }}");
+</script>
+{% endif %}
 
-    <script src="https://unicons.iconscout.com/release/v4.0.8/script/monochrome/bundle.js"/>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <title>Col@bore!</title>
-    <style>
-        input[type="radio"] {
-            border: 2px solid black;
-        }
-    </style>
-</head>
-
-<body class="bg-gradient">
-    <nav class="navbar navbar-expand-md navbar-dark bg-primary">
-    <div class="container-fluid">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
-            aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <a class="navbar-brand me-0 me-md-auto fw-bold" href="#">
-            Col@bore!
-        </a>
-        <div class="collapse navbar-collapse" id="navbarCollapse">
-            <ul class="navbar-nav mx-auto">
-                <li class="nav-item">
-                    <a onclick="showSection('feedback')"><i id="icone_feedback" class="uil uil-file-search-alt icone"></i></a>
-                </li>
+<main class="d-flex">
+    <div id="Details" class="modal" style="display: none;">
+        <div id="modal-content" class="modal-content">
+            <span class="close" onclick="fecharModal('Details')">&times;</span>
+            <h1 id="titulo"></h1>
+            <div class="informacoes">
+                <p id="datahora2"></p>
+                <h5>Área</h5>
+                <p id="area"></p>
+                <h5>Local</h5>
+                <p id="local"></p>
+                <h5>Descrição</h5>
+                <p id="descricao"></p>
+                <h5 id="status_titulo">Status</h5>
                 {% if Eadm %}
-                <li class="nav-item">
-                    <a onclick="showSection('mail')"><i id="icone_mail" class="uil uil-envelope icone"></i></a>
-                </li>
+                <form method="post" id="form_status" action="{% url 'atualizar_status' %}">
+                    {% csrf_token %}
+                    <div class="d-flex">
+                        <select name="select_status" id="select_status" class="form-select" style="width: 90%;">
+                            {% for s in status %}
+                            <option value="{{ s.id }}">{{ s.status }}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-warning" onclick="newStatus()">Alterar</button>
+                    </div>
+                    <input type="hidden" name="feedback_id2" id="feedback_id2">
+                </form>
+                {% else %}
+                <ul>
+                    <li id="status"></li>
+                </ul>
                 {% endif %}
-                <li class="nav-item">
-                    <a id="loadData" onclick="showSection('historic')"><i id="icone_historic" class="uil uil-copy-landscape icone"></i></a>
-                </li>
-            </ul>
-            <div class="col-12 col-md-2 text-md-end">
-                {% if user.is_authenticated %}
-                    <a href="" class="btn btn-outline-light" role="button" id="logout">Logout</a>
-                {% endif %}
+                <div class="imagem">
+                    <h5>Imagem</h5>
+                    <img id="imagem">
+                </div>
+                <div id="comentarios_container" class="d-flex flex-column gap-4">
+                </div>
+                <form method="post" id="form" enctype="multipart/form-data" action="{% url 'salvar_comentario' %}">
+                    {% csrf_token %}
+                    <div class="comentario">
+                        <div class="input-group mb-3">
+                            <!-- <img src="caminho/para/a/imagem.jpg" alt="Foto da pessoa" class="img-fluid" /> -->
+                            <label id="label_coment_img" for="coment_img"
+                                class="input-group-text bg-warning text-light rounded-circle"
+                                style="cursor: pointer;">📷</label>
+                            <input type="file" name="coment_img" id="coment_img" accept="image/*" style="display: none;"
+                                onchange="validarArquivo(this, 1)">
+
+                            <input type="text" class="form-control rounded-left" name="texto" id="texto"
+                                placeholder="Digite seu comentário" aria-label="Digite seu comentário"
+                                aria-describedby="button-addon">
+                            <input type="hidden" name="feedback_id" id="feedback_id">
+                            <button class="btn btn-outline-secondary" type="submit" id="button-addon">Enviar</button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-</nav>
-    {% if error_message %}
-    <script>
-        alert("{{ error_message }}");
-    </script>
+
+    {% if u_questionario %}
+
+    <div id="adc_feedback" onclick="showSection('feedback')" class="rounded-circle bg-primary">
+        <i class="uil uil-plus"></i>
+    </div>
+
+    <section id='feedback' class="form-container">
+        <form id="form_feedback" method="POST" action="{% url 'salvar_Answer' %}" class="p-4 caixa-form"
+            enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-1 d-flex flex-column align-items-center">
+                <h1 class="mb-4">{{ u_questionario.nome }}</h1>
+            </div>
+            {% for quest in quests %}
+            <div class="mb-4">
+                {% if quest.tipo.tipo == "Resposta Curta" %}
+                <label for="{{ quest.id }}" class="form-label bold">{{ quest.titulo }}</label>
+                <input type="text" name="{{ quest.id }}" id="{{ quest.id }}" placeholder="{{ quest.titulo }}"
+                    class="form-control questao" required>
+                {% elif quest.tipo.tipo == "Dropdown" %}
+                <label for="{{ quest.id }}" class="form-label bold">{{ quest.titulo }}</label>
+                <select name="{{ quest.id }}" id="{{ quest.id }}" class="form-select questao" required>
+                    <option value=""></option>
+                    {% if quest.area %}
+                    {% for area in areas %}
+                    <option value="{{ area.id }}">{{ area.area }}</option>
+                    {% endfor %}
+                    {% elif quest.local %}
+                    {% for local in locais %}
+                    <option value="{{ local.id }}">{{ local.local }}</option>
+                    {% endfor %}
+                    {% endif %}
+                </select>
+                {% elif quest.tipo.tipo == "Resposta Longa" %}
+                <label for="{{ quest.id }}" class="form-label bold">{{ quest.titulo }}</label>
+                <textarea id="{{ quest.id }}" name="{{ quest.id }}" maxlength="3000" rows="2" cols="50"
+                    class="form-control questao" placeholder="{{ quest.titulo }}" required></textarea>
+                {% elif quest.tipo.tipo == "Imagem" %}
+                <label for="{{ quest.id }}" class="form-label bold">{{ quest.titulo }}</label>
+                <input type="file" name="form_imagem" id="form_imagem" accept=".png, .jpg, .jpeg, .pdf"
+                    class="form-control questao" onchange="validarArquivo(this, 0)">
+                {% endif %}
+            </div>
+            {% endfor %}
+            <input type="hidden" name="arrayP" id="arrayP" value="">
+            <div class="d-flex flex-column align-items-center">
+                <button type="button" onclick="atualizarCamposHidden()" class="btn btn-primary">Enviar Resposta</button>
+            </div>
+        </form>
+    </section>
+
+    {% if Eadm %}
+    <section id='mail' class="flex-column align-items-center gap-2 hide">
+        <h1>Seu Setor</h1>
+        <select name="area" id="areaId" class="form-select w-50" onchange="myFunction()">
+            <option value=""></option>
+            {% for area in areas %}
+            <option value="{{ area.id }}">{{ area.area }}</option>
+            {% endfor %}
+        </select>
+        <div id="feedback-list-mail" class="gap-2 feedback-list">
+        </div>
+    </section>
     {% endif %}
 
-    <main class="d-flex">
-            <div id="Details" class="modal" style="display: none;">
-                <div id="modal-content" class="modal-content">
-                    <span class="close" onclick="fecharModal('Details')">&times;</span>
-                    <h1 id="titulo"></h1>
-                    <div class="informacoes">
-                        <p id="datahora2"></p>
-                        <h5>Área</h5>
-                        <p id="area"></p>
-                        <h5>Local</h5>
-                        <p id="local"></p>
-                        <h5>Descrição</h5>
-                        <p id="descricao"></p>
-                        <h5 id="status_titulo">Status</h5>
-                        {% if Eadm %}
-                            <select name="select_status" id="select_status" class="form-select" onchange="newStatus()">
-                                {% for s in status %}
-                                    <option value="{{ s.id }}">{{ s.status }}</option>
-                                {% endfor %}
-                            </select>
-                            <button onclick="newStatus()">Novo Status</button>
-                        {% else %}
-                            <ul>
-                                <li id="status"></li>
-                            </ul>
-                        {% endif %}
-                        <div class="imagem">
-                            <h5>Imagem</h5>
-                            <img id="imagem">
-                        </div>
-                        <div id="comentarios_container" class="d-flex flex-column gap-2">
-                        </div>
-                        <form method="post" id="form" enctype="multipart/form-data" action="{% url 'salvar_comentario' %}">
-                        {% csrf_token %}
-                            <div class="comentario">
-                                <div class="input-group mb-3">
-                                    <!-- <img src="caminho/para/a/imagem.jpg" alt="Foto da pessoa" class="img-fluid" /> -->
-                                    <label for="coment_img" class="input-group-text bg-secondary text-light rounded-circle" style="cursor: pointer;">📷</label>
-                                    <input type="file" name="coment_img" id="coment_img" accept="image/*" style="display: none;">
 
-                                    <input type="text" class="form-control rounded-left" name="texto" id="texto" placeholder="Digite seu comentário" aria-label="Digite seu comentário" aria-describedby="button-addon">
-                                    <input type="hidden" name="feedback_id" id="feedback_id">
-                                    <button class="btn btn-outline-secondary" type="submit" id="button-addon">Enviar</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
+    <section id='historic' class="flex-column align-items-center gap-3 hide">
+        <h1>Histórico</h1>
+        <div id="feedback-list-historic" class="gap-2 feedback-list">
 
-            {% if u_questionario %}
+        </div>
+    </section>
 
-            <section id='feedback' class="form-container">
-                <form method="POST" action="{% url 'salvarAnswer' %}" class="p-4" onsubmit="atualizarCamposHidden()" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="mb-1 d-flex flex-column align-items-center">
-                        <h1 class="mb-4">{{ u_questionario.nome }}</h1>
-                    </div>
-                    {% for quest in quests %}
-                    <div class="mb-3">
-                        {% if quest.tipo.tipo == "Resposta Curta" %}
-                        <label for="{{ quest.id }}" class="form-label bold">{{ quest.titulo }}</label>
-                        <input type="text" name="{{ quest.id }}" id="{{ quest.id }}" placeholder="{{ quest.titulo }}"
-                            class="form-control questao" required>
-                        {% elif quest.tipo.tipo == "Dropdown" %}
-                        <label for="{{ quest.id }}" class="form-label bold">{{ quest.titulo }}</label>
-                        <select name="{{ quest.id }}" id="{{ quest.id }}" class="form-select questao" required>
-                            <option value=""></option>
-                            {% if quest.area %}
-                            {% for area in areas %}
-                            <option value="{{ area.id }}">{{ area.area }}</option>
-                            {% endfor %}
-                            {% elif quest.local %}
-                            {% for local in locais %}
-                            <option value="{{ local.id }}">{{ local.local }}</option>
-                            {% endfor %}
-                            {% endif %}
-                        </select>
-                        {% elif quest.tipo.tipo == "Resposta Longa" %}
-                        <label for="{{ quest.id }}" class="form-label bold">{{ quest.titulo }}</label>
-                        <textarea id="{{ quest.id }}" name="{{ quest.id }}" maxlength="3000" rows="2" cols="50" class="form-control questao" 
-                            placeholder="{{ quest.titulo }}" required ></textarea>
-                        {% elif quest.tipo.tipo == "Imagem" %}
-                        <label for="{{ quest.id }}" class="form-label bold">{{ quest.titulo }}</label>
-                        <input type="file" name="form_imagem" id="form_imagem" accept="image/*" class="form-control questao">
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                    <input type="hidden" name="arrayP" id="arrayP" value="">
-                    <div class="d-flex flex-column align-items-center">
-                        <button type="submit" class="btn btn-primary">Enviar Resposta</button>
-                    </div>
-                </form>
-            </section>
+    {% else %}
 
-            {% if Eadm %}
-            <section id='mail' class="flex-column align-items-center gap-3 hide">
-                <select name="area" id="areaId" class="form-select" onchange="myFunction()">
-                    <option value=""></option>
-                    {% for area in areas %}
-                        <option value="{{ area.id }}">{{ area.area }}</option>
-                    {% endfor %}
-                </select>
-                        <div id="feedback-list" class="gap-2 feedback-list">
-                            {% if mails %}
-                            {% for mail in mails %}
-                            <div class="d-flex card2" 
-                            onclick="showDetails('{{mail.id}}')">
-                                <p class="status">{{ mail.status }}</p>
-                                <h4 class="textinho" >{{ mail.area }} - {{ mail.local }}</h4>
-                                <p class="textinho">{{ mail.descricao }}</p>
-                                {% if mail.datahora|date:'d/m/Y' == hoje %}
-                                    <p>{{ mail.datahora|time:'H:i' }}</p>
-                                {% else %}
-                                    <p>{{ mail.datahora|date:'d/m/Y' }}</p>
-                                {% endif %}                            
-                            </div>
-                            {% endfor %}
-                            {% else %}
-                            <h1>Você ainda não recebeu nenhum feedback</h1>
-                            {% endif %}
-                        </div>
-                    </section>
-            {% endif %}
-                        
+    <h1>Não há um questionário formulado</h1>
 
-            <section id='historic' class="flex-column align-items-center gap-3 hide">
-                <h1>Histórico</h1>
-                <div class="gap-2 feedback-list">
-                {% if historic %}
-                {% for h in historic %}
-                <div class="d-flex card2"
-                onclick="showDetails('{{h.id}}')">
-                    <p class="status">{{h.status}}</p>
-                    <h4 class="textinho" >{{ h.area }} - {{ h.local }}</h4>
-                    <p class="textinho">{{ h.descricao }}</p>
-                    {% if h.datahora|date:'d/m/Y' == hoje %}
-                        <p>{{ h.datahora|time:'H:i' }}</p>
-                    {% else %}
-                        <p>{{ h.datahora|date:'d/m/Y' }}</p>
-                    {% endif %}
-                </div>
-                {% endfor %}
-                {% else %}
-                <h1>Você ainda não enviou nenhum feedback</h1>
-                {% endif %}
-                </div>
-            </section>
+    {% endif %}
+</main>
 
-            {% else %}
+<div id="verifica" class="flex-column align-items-center" style="display: none;">
 
-            <h1>Não há um questionário formulado</h1>
+</div>
 
-            {% endif %}
+{% endblock content %}
 
-    </main>
+{% block javascript %}
 
+<script>
 
-
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
-        crossorigin="anonymous"></script>
-    <!-- Bootstrap JavaScript and dependencies -->
-    <script>
-        function showSection(section) {
-            var div = document.querySelector('main');
-            var sections = div.querySelectorAll('section');
-            sections.forEach(function (sectionElement) {
-                if (sectionElement.id === section) {
-                    sectionElement.classList.remove('hide');
-                } else {
-                    sectionElement.classList.add('hide');
-                }
-            });
-            icones = document.querySelectorAll('.icone');
-            icone_id = 'icone_' + section;
-            icones.forEach(function (iconeElement) {
-                if (iconeElement.id === icone_id) {
-                    iconeElement.style.backgroundColor = '#1952706e';
-                } else {
-                    iconeElement.style.backgroundColor = 'transparent';
-                }
-            });
-
-        }
-
-        
-
-        var hoje = new Date();
-        var options = {year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric'};
-
-        function myFunction() {
-            var x = document.getElementById("areaId").value;
-
-            // Faça uma requisição AJAX para obter os comentários e exibi-los
-            $.ajax({
-                url: '/feedback/obter_feed/' + x + '/',
-                type: 'GET',
-                success: function (data) {
-                    // Limpe os comentários_container
-                    $('#feedback-list').empty();
-
-                    // Converta a string JSON de volta para um objeto JavaScript
-                    var mails = JSON.parse(data);
-
-                    // Mapeie os objetos para um novo array contendo apenas os campos desejados
-                    var mailsFiltrados = mails.map(function (mail) {
-                        return {
-                            id: mail.pk,
-                            area: mail.fields.area,
-                            local: mail.fields.local,
-                            datahora: mail.fields.datahora,
-                            descricao: mail.fields.descricao,
-                            status: mail.fields.status
-                        };
-                    });
-
-                    // Verifique se a lista de "mails" está vazia
-                    if (mailsFiltrados.length === 0) {
-                        // Crie a tag h1 com a mensagem
-                        var mensagem = document.createElement('h1');
-                        mensagem.textContent = 'Você ainda não recebeu nenhum feedback';
-
-                        // Adicione a mensagem à div de feedback-list
-                        var container = document.getElementById('feedback-list');
-                        container.appendChild(mensagem);
-                    } else {
-                        // Adicione os comentários filtrados à div
-                        mailsFiltrados.forEach(function (mail) {
-                            var datahora = new Date(mail.datahora);
-
-                            // Adiciona o comentário à div, limitando a 50 caracteres
-                            // var comentarioTexto = comentario.comentario.length > 20 ? comentario.comentario.substring(0, 20) + '...' : comentario.comentario;
-                            var divCard = document.createElement('div');
-                            divCard.className = 'd-flex card2';
-                            divCard.onclick = function() {
-                                showDetails(mail.id);
-                            };
-
-                            ['p', 'h4', 'p', 'p'].forEach(function(tag, index) {
-                                var element = document.createElement(tag);
-                                element.className = (index === 0) ? 'status' : (index <= 2) ? 'textinho' : '';
-                                
-                                if (index === 0) {
-                                    var cor;
-                                    var texto = mail.status;
-                                    if (texto == "Não Respondida") {
-                                        cor = 'blue';
-                                    } else if (texto == "Em Andamento") {
-                                        cor = 'yellow';
-                                    } else if (texto == "Não Resolvido") {
-                                        cor = 'red';
-                                    } else if (texto == "Resolvido") {
-                                        cor = 'green';
-                                    }
-                                    element.textContent = "\u2022";
-                                    element.style.color = cor;
-                                } else if (index === 1) {
-                                    element.textContent = mail.area + " - " + mail.local;
-                                    var texto = element.textContent;
-                                    var limiteCaracteres = (window.innerWidth > 768) ? 40 : 18; // Verifica o tamanho da tela
-                                    var textoSemParenteses = texto.replace(/\(.*?\)/g, '').trim();
-                                    var textoFinal = textoSemParenteses;
-
-                                    // Limita os caracteres do texto final
-                                    element.textContent = limitarCaracteres(textoFinal, limiteCaracteres);
-
-                                } else if (index === 2) {
-                                    var limiteCaracteres = (window.innerWidth > 768) ? 40 : 18; // Verifica o tamanho da tela
-                                    element.textContent = limitarCaracteres(mail.descricao, limiteCaracteres);
-                                } else {
-                                    element.textContent = (datahora.toLocaleDateString() === hoje.toLocaleDateString()) ? 
-                                    datahora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'}) : 
-                                    datahora.toLocaleDateString();
-                                }
-                                divCard.appendChild(element);
-                            });
-
-                            // Adicionar divCard ao seu contêiner HTML existente
-                            var container = document.getElementById('feedback-list');  // Substitua 'seuContainerId' pelo ID do seu contêiner
-                                container.appendChild(divCard);
-                        });
-                    }
-                },
-                error: function (error) {
-                    console.log("amor");
-                }
-            });
-        }
-
-        function limitarCaracteres(texto, limite) {
-            return texto.length > limite ? texto.substring(0, limite) + '...' : texto;
-        }
-
-        function carregarComentarios(id, env_com) {
-            $.ajax({
-                url: '/feedback/obter_comentarios/' + id + '/',
-                type: 'GET',
-                success: function (data) {
-                    $('#comentarios_container').empty();
-                    var comentarios = JSON.parse(data);
-                    var comentariosFiltrados = comentarios.map(function (comentario) {
-                        return {
-                            comentario: comentario.fields.comentario,
-                            imagem: comentario.fields.imagem,
-                            datahora: comentario.fields.datahora,
-                            usuario: comentario.fields.usuario,
-                        };
-                    });
-
-                    comentariosFiltrados.forEach(function (comentario) {
-                        var datahora = new Date(comentario.datahora);
-                        var divComentario = $('<div>').addClass('coment');
-                        if(comentario.comentario || comentario.imagem != ''){
-
-                            divComentario.append('<p id="tipo_usuario">' + comentario.usuario + '</p>');
-
-                            divComentario.append('<p id="datahora">' + datahora.toLocaleString() + '</p>');
-
-                            if (comentario.comentario != '-' && comentario.comentario){
-                                divComentario.append('<p id="comentario_texto">' + comentario.comentario + '</p>');
-                            }
-                            if (comentario.imagem != ''){
-                                var match = comentario.imagem.match(/\/([^/]+)\.(\w+)$/);
-                                divComentario.append('<img id="coment_imagem" src="{% static "coment/img" %}/' + match[0] + '">');
-                                divComentario.addClass('coment_com_imagem');
-                            }
-                        }
-                        $('#comentarios_container').append(divComentario);
-
-                        if(env_com == true){
-                            $('.informacoes').scrollTop($('.informacoes')[0].scrollHeight);
-                        } else {
-                            $('.informacoes').scrollTop(0);
-                        }
-                    });
-
-                },
-                error: function (error) {
-                    console.log("Erro ao carregar comentários.");
-                }
-            });
-        }
-        
-        function showDetails(id) {
-            var modal = document.getElementById('Details');
-            modal.style.display = 'flex';
-
-            window.onclick = function (event) {
-                if (event.target == modal) {
-                    modal.style.display = "none";
-                }
-            }
-
-            document.getElementById('texto').value = '';
-
-            // Faça uma requisição AJAX para obter os comentários e exibi-los
-            $.ajax({
-                url: '/feedback/modal_feedback/' + id + '/',
-                type: 'GET',
-                success: function (data) {
-
-                    // Converta a string JSON de volta para um objeto JavaScript
-                    var feedbacks = JSON.parse(data);
-
-                    // Mapeie os objetos para um novo array contendo apenas os campos desejados
-                    var feedbacksFiltrados = feedbacks.map(function (feed) {
-                        return {
-                            descricao: feed.fields.descricao,
-                            area: feed.fields.area,
-                            local: feed.fields.local,
-                            imagem: feed.fields.imagem,
-                            status: feed.fields.status,
-                            datahora: feed.fields.datahora,
-                        };
-                    });
-
-                    feedbacksFiltrados.forEach(function (feed) {
-                        var datahora = new Date(feed.datahora);
-                        $('#datahora2').text(datahora.toLocaleString());
-                        $('#descricao').text(feed.descricao);
-                        $('#area').text(feed.area);
-                        $('#local').text(feed.local);
-
-                        {% if Eadm %}
-
-                        select = document.getElementById('select_status');
-                        var status = feed.status; // Obtenha o valor do status do template Django
-
-                        console.log(select)
-                        console.log(status)
-
-                        for (var i = 0; i < select.options.length; i++) {
-                            if (select.options[i].textContent === status) {
-                                console.log(select.options[i].textContentyy);
-                                select.options[i].selected = true; // Seleciona a opção com o status correspondente
-                                break;
-                            }
-                        }
-
-                        {% else %}
-                        $('#status').text(feed.status);
-                            
-                        var cor;
-                        var status = feed.status;
-                        if (status == "Não Respondida") {
-                            cor = 'blue';
-                        } else if (status == "Em Andamento") {
-                            cor = 'yellow';
-                        } else if (status == "Não Resolvido") {
-                            cor = 'red';
-                        } else if (status == "Resolvido") {
-                            cor = 'green';
-                        }
-                        document.getElementById('status').style.color = cor;
-                        {% endif %}
-
-                        var imagemElement = document.getElementById('imagem');
-
-                        if (feed.imagem != ''){
-                            var match = feed.imagem.match(/\/([^/]+)\.(\w+)$/);
-                            imagemElement.src = '{% static "img" %}' + match[0];
-                            imagemElement.parentElement.style.textAlign = 'center';
-                        } else {
-                            imagemElement.alt = 'Usuário não enviou foto';
-                            imagemElement.src = '';
-                        }
-                    });
-                
-                },
-                error: function (error) {
-                    console.log("abla maiusculo");
-                    console.log(error)
-                }
-            });
-
-            document.getElementById('feedback_id').value = id;
-
-            carregarComentarios(id, false);
-        }
-
-        function newStatus() {
-    var novoStatus = document.getElementById('select_status').value;
-    var idFeedback = document.getElementById('feedback_id').value;
-
-    $.ajax({
-        url: '/atualizar_status/',
-        type: 'POST',
-        data: {
-            novoStatus: novoStatus,
-            idFeedback: idFeedback
-        },
-        success: function (data) {
-            console.log('Status atualizado com sucesso!');
-            // Adicione aqui qualquer lógica adicional após o sucesso
-        },
-        error: function (error) {
-            console.error('Erro ao atualizar o status:', error);
-        }
-    });
-}
-
-
-        function salvarComentario() {
-            var form = $('#form')[0];
-            var formData = new FormData(form);
-            texto = document.getElementById('texto').value;
-            coment_img = document.getElementById('coment_img').value;
-            
-            if (!(texto == '' && coment_img == '')){
-                $.ajax({
-                    url: '/fee  dback/salvar_comentario/',  // Substitua pela sua URL de salvamento
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function (data) {
-                        console.log('Comentário salvo com sucesso!');
-                         // Limpar os campos de texto e imagem
-                        document.getElementById('texto').value = '';
-                        document.getElementById('coment_img').value = '';
-
-
-                        // Adicione aqui qualquer lógica adicional após o sucesso
-                        var id = document.getElementById('feedback_id').value;
-                        carregarComentarios(id, true);
-                        // Adicione esta linha para rolar o scroll para o topo do modal
-                        
-                    },
-                    error: function (error) {
-                        console.error('Erro ao salvar o comentário:', error);
-                    }
-                });
+    function showSection(section) {
+        var div = document.querySelector('main');
+        var sections = div.querySelectorAll('section');
+        sections.forEach(function (sectionElement) {
+            if (sectionElement.id === section) {
+                sectionElement.classList.remove('hide');
             } else {
-                alert('Insira alguma informação em texto ou imagem');
+                sectionElement.classList.add('hide');
             }
-
+        });
+        if (section != 'feedback') {
+            obter_feed(0, section);
         }
-
-        // Adicione um manipulador de eventos para o envio do formulário
-        $(document).ready(function () {
-            $('#form').submit(function (event) {
-                event.preventDefault(); // Impede o envio padrão do formulário
-                salvarComentario(); // Chama a função para enviar o formulário via AJAX
-            });
+        icones = document.querySelectorAll('.icone');
+        icone_id = 'icone_' + section;
+        icones.forEach(function (iconeElement) {
+            if (iconeElement.style.display === 'none') {
+                
+            } else if (iconeElement.id === icone_id) {
+                iconeElement.classList.add("fw-bold", "text-white"); // Adiciona as classes
+            } else {
+                iconeElement.classList.remove("fw-bold", "text-white"); // Remove as classes
+            }
         });
 
-        function fecharModal(modal) {
-            var modal = document.getElementById(modal);
-            modal.style.display = 'none';
-        }
+    }
 
-        window.onload = function () {
-            var textinho = document.querySelectorAll('.textinho')
-            textinho.forEach(function (element) {
-                var texto = element.textContent;
-                var limiteCaracteres = (window.innerWidth > 768) ? 40 : 18; // Verifica o tamanho da tela
-                var textoSemParenteses = texto.replace(/\(.*?\)/g, '').trim();
-                var textoFinal = textoSemParenteses;
+    var hoje = new Date();
+    var options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' };
 
-                // Limita os caracteres do texto final
-                element.textContent = limitarCaracteres(textoFinal, limiteCaracteres);
-            })
+    function salvarAnswer() {
+        var form = $('#form_feedback')[0];
+        var formData = new FormData(form);
 
-            document.getElementById('icone_feedback').style.backgroundColor = '#1952706e';            
+        $.ajax({
+            url: '{% url "salvar_Answer" %}',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                swal("Sucesso!", "Feedback enviado com Sucesso!", "success");
+                // Limpar todos os campos do formulário
+                $('#form_feedback input[type="text"]').val('');
+                $('#form_feedback select').val('');
+                $('#form_feedback textarea').val('');
+                // Resetar o input de arquivo, se necessário
+                $('#form_feedback input[type="file"]').val('');
+                // Alerta de feedback enviado com sucesso
 
-            var status = document.querySelectorAll('.status')
-            status.forEach(function (element) {
-                var cor;
-                var texto = element.textContent;
-                if (texto == "Não Respondida") {
-                    cor = 'blue';
-                } else if (texto == "Em Andamento") {
-                    cor = 'yellow';
-                } else if (texto == "Não Resolvido") {
-                    cor = 'red';
-                } else if (texto == "Resolvido") {
-                    cor = 'green';
+                // Verifica se a div #verifica está visível (display: flex)
+                if ($('#verifica').css('display') === 'flex') {
+                    verificaModal.closeModal(); // Fecha o modal
                 }
-                element.style.color = cor;
-                element.textContent = "\u2022";
-            })
-        }
+            },
+            error: function (error) {
+                alert('Feedback não foi enviado!');
 
-        var contDiv = document.querySelector('.cont');
+                console.error('Erro ao enviar feedback:', error);
+            }
+        });
+    }
 
-        var arrayP = [];
+    function obter_feed(x, section) {
+        $.ajax({
+            url: '/feedback/obter_feed/' + x + '/',
+            type: 'GET',
+            success: function (data) {
+                feedback_list = 'feedback-list-' + section;
+                // Limpe os comentários_container
+                $("#" + feedback_list).empty();
 
-        // Essa função será chamada quando o formulário for enviado para atualizar os campos hidden.
-        function atualizarCamposHidden() {
+                // Converta a string JSON de volta para um objeto JavaScript
+                var mails = JSON.parse(data);
 
-            arrayP.length = 0;
-            // Obtenha todos os campos do formulário
-            var formElements = document.querySelectorAll('form .questao');
-
-            // Itere pelos campos e adicione as informações aos arrays
-            formElements.forEach(function (element) {
-                arrayP.push(element.id)
-            });
-            document.getElementById("arrayP").value = JSON.stringify(arrayP);
-        }
-
-        function abrirCamera() {
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(function (stream) {
-                    var video = document.createElement('video');
-                    video.srcObject = stream;
-                    video.autoplay = true;
-                    
-                    // Adicione o elemento de vídeo à sua página ou exiba em um modal
-                    document.body.appendChild(video);
-                })
-                .catch(function (error) {
-                    console.error('Erro ao acessar a câmera:', error);
-                    alert('Não foi possível acessar a câmera. Verifique se sua página está sendo carregada em um ambiente seguro (HTTPS) ou localhost.');
+                // Mapeie os objetos para um novo array contendo apenas os campos desejados
+                var mailsFiltrados = mails.map(function (mail) {
+                    return {
+                        id: mail.pk,
+                        area: mail.fields.area,
+                        local: mail.fields.local,
+                        datahora: mail.fields.datahora,
+                        descricao: mail.fields.descricao,
+                        status: mail.fields.status
+                    };
                 });
-        }
-</script>
-</body>
 
-</html>
+                // Verifique se a lista de "mails" está vazia
+                if (mailsFiltrados.length === 0) {
+                    // Crie a tag h1 com a mensagem
+                    var mensagem = document.createElement('h1');
+                    if(section == 'mail'){
+                        mensagem.textContent = 'Não há feedbacks para o seu setor';
+                    } else if(section == 'historic'){
+                        mensagem.textContent = 'Você ainda não enviou nenhum feedback';
+                    }
+
+                    // Adicione a mensagem à div de feedback-list
+                    var container = document.getElementById(feedback_list);
+                    container.appendChild(mensagem);
+                } else {
+                    // Adicione os comentários filtrados à div
+                    mailsFiltrados.forEach(function (mail) {
+                        var datahora = new Date(mail.datahora);
+
+                        // Adiciona o comentário à div, limitando a 50 caracteres
+                        // var comentarioTexto = comentario.comentario.length > 20 ? comentario.comentario.substring(0, 20) + '...' : comentario.comentario;
+                        var divCard = document.createElement('div');
+                        divCard.className = 'card px-3';
+                        divCard.onclick = function () {
+                            showDetails(mail.id);
+                        };
+
+                        ['p', 'h4', 'p', 'p'].forEach(function (tag, index) {
+                            var element = document.createElement(tag);
+                            element.className = (index === 0) ? 'status' : (index <= 2) ? 'textinho' : '';
+
+                            if (index === 0) {
+                                var cor;
+                                var texto = mail.status;
+                                if (texto == "Não Respondida") {
+                                    cor = 'blue';
+                                } else if (texto == "Em Andamento") {
+                                    cor = 'gold';
+                                } else if (texto == "Não Resolvido") {
+                                    cor = 'red';
+                                } else if (texto == "Resolvido") {
+                                    cor = 'green';
+                                }
+                                divCard.style.borderLeft = "10px solid " + cor;
+                                element.setAttribute('data-status', mail.status);
+                                element.setAttribute('data-id', mail.id);
+                            } else if (index === 1) {
+                                element.textContent = mail.area + " - " + mail.local;
+                                var texto = element.textContent;
+                                var textoSemParenteses = texto.replace(/\(.*?\)/g, '').trim();
+                                var textoFinal = textoSemParenteses;
+
+                                element.style.fontSize = '1.3rem';
+
+                            } else if (index === 2) {
+                                var limiteCaracteres = (window.innerWidth > 768) ? 40 : 75; // Verifica o tamanho da tela
+                                element.textContent = limitarCaracteres(mail.descricao, limiteCaracteres);
+                                // element.textContent = mail.descricao;
+                            } else {
+                                element.textContent = (datahora.toLocaleDateString() === hoje.toLocaleDateString()) ?
+                                    datahora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) :
+                                    datahora.toLocaleDateString();
+                                element.style.textAlign = 'right';
+                            }
+                            divCard.appendChild(element);
+                        });
+
+                        // Adicionar divCard ao seu contêiner HTML existente
+                        var container = document.getElementById(feedback_list);  // Substitua 'seuContainerId' pelo ID do seu contêiner
+                        container.appendChild(divCard);
+                    });
+                }
+            },
+            error: function (error) {
+                console.log("amor, ", error);
+            }
+        });
+    }
+
+    function myFunction() {
+        var x = document.getElementById("areaId").value;
+
+        obter_feed(x, 'mail');
+    }
+
+    function limitarCaracteres(texto, limite) {
+        return texto.length > limite ? texto.substring(0, limite) + '...' : texto;
+    }
+
+    function carregarComentarios(id, env_com) {
+        $.ajax({
+            url: '/feedback/obter_comentarios/' + id + '/',
+            type: 'GET',
+            success: function (data) {
+                $('#comentarios_container').empty();
+                var comentarios = JSON.parse(data);
+                var comentariosFiltrados = comentarios.map(function (comentario) {
+                    return {
+                        comentario: comentario.fields.comentario,
+                        imagem: comentario.fields.imagem,
+                        datahora: comentario.fields.datahora,
+                        usuario: comentario.fields.usuario,
+                    };
+                });
+
+                var contador_coment = 0
+
+                comentariosFiltrados.forEach(function (comentario) {
+                    if (comentario.comentario || comentario.imagem != '') {
+                        var datahora = new Date(comentario.datahora);
+                        var divComentario = $('<div>').addClass('coment');
+
+                        divComentario.append('<p class="tipo_usuario">' + comentario.usuario + '</p>');
+
+                        divComentario.append('<p class="datahora">' + datahora.toLocaleString() + '</p>');
+                        
+                        var caixa = $('<div>').addClass('caixa gap-2');
+
+                        if (comentario.comentario != '-' && comentario.comentario) {
+
+                            if (comentario.imagem != '') {
+
+                                var match = comentario.imagem.match(/\/([^/]+)\.(\w+)$/);
+                                caixa.append('<img class="coment_imagem mb-3" src="{% static "coment/img" %}/' + match[0] + '">');
+                                divComentario.addClass('coment_com_imagem');
+
+                                caixa.append('<p class="comentario_texto"></p>');
+                            } else {
+                                caixa.append('<p class="comentario_texto"></p>');
+                            }
+
+                        } else if (comentario.imagem != '') {
+                            var match = comentario.imagem.match(/\/([^/]+)\.(\w+)$/);
+                            caixa.append('<img class="coment_imagem" src="{% static "coment/img" %}/' + match[0] + '">');
+                            divComentario.addClass('coment_com_imagem');
+                            if (contador_coment > 0) {
+                                contador_coment = contador_coment - 1;
+                            }
+                        }
+                        divComentario.append(caixa);
+
+                        $('#comentarios_container').append(divComentario);
+                        if (comentario.comentario != '-' && comentario.comentario) {
+                            a = document.getElementsByClassName('comentario_texto')[contador_coment];
+                            $(a).text(comentario.comentario);
+                        }
+                        contador_coment = contador_coment + 1;
+                    }
+
+                    if (env_com == true) {
+                        $('.informacoes').scrollTop($('.informacoes')[0].scrollHeight);
+                    } else {
+                        $('.informacoes').scrollTop(0);
+                    }
+                });
+
+            },
+            error: function (error) {
+                console.log("Erro ao carregar comentários.");
+            }
+        });
+    }
+
+    function showDetails(id) {
+        var modal = document.getElementById('Details');
+        modal.style.display = 'flex';
+
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        document.getElementById('texto').value = '';
+
+        // Faça uma requisição AJAX para obter os comentários e exibi-los
+        $.ajax({
+            url: '/feedback/modal_feedback/' + id + '/',
+            type: 'GET',
+            success: function (data) {
+
+                // Converta a string JSON de volta para um objeto JavaScript
+                var feedbacks = JSON.parse(data);
+
+                // Mapeie os objetos para um novo array contendo apenas os campos desejados
+                var feedbacksFiltrados = feedbacks.map(function (feed) {
+                    return {
+                        descricao: feed.fields.descricao,
+                        area: feed.fields.area,
+                        local: feed.fields.local,
+                        imagem: feed.fields.imagem,
+                        status: feed.fields.status,
+                        datahora: feed.fields.datahora,
+                    };
+                });
+
+                feedbacksFiltrados.forEach(function (feed) {
+                    var datahora = new Date(feed.datahora);
+                    $('#datahora2').text(datahora.toLocaleString());
+                    $('#descricao').text(feed.descricao);
+                    $('#area').text(feed.area);
+                    $('#local').text(feed.local);
+
+                    {% if Eadm %}
+
+                    select = document.getElementById('select_status');
+                    var status = feed.status; // Obtenha o valor do status do template Django
+
+                    for (var i = 0; i < select.options.length; i++) {
+                        if (select.options[i].textContent === status) {
+                            select.options[i].selected = true; // Seleciona a opção com o status correspondente
+                            break;
+                        }
+                    }
+
+                    {% else %}
+                        $('#status').text(feed.status);
+
+        var cor;
+        var status = feed.status;
+        if (status == "Não Respondida") {
+            cor = 'blue';
+        } else if (status == "Em Andamento") {
+            cor = 'yellow';
+        } else if (status == "Não Resolvido") {
+            cor = 'red';
+        } else if (status == "Resolvido") {
+            cor = 'green';
+        }
+        document.getElementById('status').style.color = cor;
+        {% endif %}
+
+        var imagemElement = document.getElementById('imagem');
+
+        if (feed.imagem != '') {
+            var match = feed.imagem.match(/\/([^/]+)\.(\w+)$/);
+            imagemElement.src = '{% static "img" %}' + match[0];
+            imagemElement.parentElement.style.textAlign = 'center';
+        } else {
+            imagemElement.alt = 'Usuário não enviou foto';
+            imagemElement.src = '';
+        }
+    });
+                
+                },
+    error: function (error) {
+        console.log("abla maiusculo");
+        console.log(error)
+    }
+            });
+
+    document.getElementById('feedback_id').value = id;
+    {% if Eadm %}
+    document.getElementById('feedback_id2').value = id;
+    {% endif %}
+
+    carregarComentarios(id, false);
+        }
+
+
+    function setarCorStatus() {
+        var status = document.querySelectorAll('.status')
+        status.forEach(function (element) {
+            var cor;
+            var texto = element.getAttribute('data-status')
+            if (texto == "Não Respondida") {
+                cor = 'blue';
+            } else if (texto == "Em Andamento") {
+                cor = 'yellow';
+            } else if (texto == "Não Resolvido") {
+                cor = 'red';
+            } else if (texto == "Resolvido") {
+                cor = 'green';
+            }
+            element.parentNode.style.borderLeft = "10px solid " + cor;
+        })
+    }
+
+
+    function newStatus() {
+        var form = $('#form_status')[0];
+        var formData = new FormData(form);
+        var novoStatus = document.getElementById('select_status').value;
+        var selectElement = document.getElementById('select_status');
+        var selectedIndex = selectElement.selectedIndex;
+        var novoStatus2 = selectElement.options[selectedIndex].textContent;
+        var idFeedback = document.getElementById('feedback_id2').value;
+
+        $.ajax({
+            url: '/feedback/atualizar_status/',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+
+                id = document.getElementById('feedback_id').value;
+
+                // Encontrar o elemento <p> correspondente pelo data-id
+                var elemento = document.querySelector('p[data-id="' + id + '"]');
+                elemento.setAttribute('data-status', novoStatus2);
+
+                setarCorStatus();
+
+                alert('Status atualizado com sucesso!');
+                // Adicione aqui qualquer lógica adicional após o sucesso
+            },
+            error: function (error) {
+                console.error('Erro ao atualizar o status:', error);
+            }
+        });
+    }
+
+    function salvarComentario() {
+        var form = $('#form')[0];
+        var formData = new FormData(form);
+        texto = document.getElementById('texto').value;
+        coment_img = document.getElementById('coment_img').value;
+
+        if (!(texto == '' && coment_img == '')) {
+            $.ajax({
+                url: '/feedback/salvar_comentario/',  // Substitua pela sua URL de salvamento
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    // Limpar os campos de texto e imagem
+                    document.getElementById('texto').value = '';
+                    document.getElementById('coment_img').value = '';
+
+                    document.getElementById('label_coment_img').classList.remove('bg-success');
+                    document.getElementById('label_coment_img').classList.add('bg-warning');
+
+
+                    // Adicione aqui qualquer lógica adicional após o sucesso
+                    var id = document.getElementById('feedback_id').value;
+                    carregarComentarios(id, true);
+                    // Adicione esta linha para rolar o scroll para o topo do modal
+
+                },
+                error: function (error) {
+                    console.error('Erro ao salvar o comentário:', error);
+                }
+            });
+        } else {
+            alert('Insira alguma informação em texto ou imagem');
+        }
+
+    }
+
+    // Adicione um manipulador de eventos para o envio do formulário
+    $(document).ready(function () {
+        $('#form').submit(function (event) {
+            event.preventDefault(); // Impede o envio padrão do formulário
+            salvarComentario(); // Chama a função para enviar o formulário via AJAX
+        });
+    });
+
+    function fecharModal(modal) {
+        var modal = document.getElementById(modal);
+        modal.style.display = 'none';
+    }
+
+
+    window.onload = function () {
+        if (window.innerWidth < 768) {
+            document.getElementById('navbar_mobile').style.display = 'flex';
+        } else {
+            document.getElementById('navbar_pc').style.display = 'flex';
+        }
+
+        setarCorStatus();
+    }
+
+
+
+    var contDiv = document.querySelector('.cont');
+
+    var arrayP = [];
+
+    let verificaModal = new Modal('modalVerifica', 'Estas são as correspondências semelhantes:', 'verifica');
+
+    verificaModal.createModal();
+
+    // Essa função será chamada quando o formulário for enviado para atualizar os campos hidden.
+    function atualizarCamposHidden() {
+
+        arrayP.length = 0;
+        // Obtenha todos os campos do formulário
+        var formElements = document.querySelectorAll('form .questao');
+
+        // Itere pelos campos e adicione as informações aos arrays
+        formElements.forEach(function (element) {
+            arrayP.push(element.id)
+        });
+
+        document.getElementById("arrayP").value = JSON.stringify(arrayP);
+
+        var form = new FormData(document.getElementById("form_feedback"));
+
+        $.ajax({
+            url: '{% url "verifica" %}',
+            type: 'POST',
+            data: form,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                console.log(data)
+                data = data.feedbacks
+
+                if (data.length > 0) {
+                    var verificaDiv = $("#verifica");
+                    verificaDiv.empty(); // Limpa o conteúdo anterior da div
+
+                    var formHTML = '<form id="feedbackForm">';
+
+                    var form = document.createElement('form');
+                    
+                    form.id = 'feedbackForm';
+                    form.className = 'd-flex flex-column';
+
+                    // Nome do grupo de radio buttons (garante seleção única)
+                    const radioGroupName = 'feedback_id';
+
+                    data.forEach(feedback => {
+                        var div = document.createElement('div');
+                        div.className = 'form-check';
+
+                        var input = document.createElement('input');
+                        input.className = 'form-check-input';
+                        input.type = 'radio'; // Mudança para 'radio'
+                        input.name = radioGroupName; // Define o nome do grupo
+                        input.value = feedback.id;
+                        input.id = `feedback_${feedback.id}`;
+
+                        var label = document.createElement('label');
+                        label.className = 'form-check-label';
+                        label.htmlFor = input.id;
+                        label.textContent = feedback.descricao;
+
+                        div.appendChild(input);
+                        div.appendChild(label);
+                        form.appendChild(div);
+                    });
+
+                    // Cria o checkbox "Outro"
+                    var outroDiv = document.createElement('div');
+                    outroDiv.className = 'form-check';
+
+                    var outroInput = document.createElement('input');
+                    outroInput.className = 'form-check-input';
+                    outroInput.type = 'radio';
+                    outroInput.name = radioGroupName;
+                    outroInput.value = 'outro'; // Define o valor como 'outro'
+                    outroInput.id = 'feedback_outro';
+
+                    var outroLabel = document.createElement('label');
+                    outroLabel.className = 'form-check-label';
+                    outroLabel.htmlFor = outroInput.id;
+                    outroLabel.textContent = 'Nenhum dos relatos acima é parecido com o meu';
+
+                    outroDiv.appendChild(outroInput);
+                    outroDiv.appendChild(outroLabel);
+                    form.appendChild(outroDiv); 
+
+                    // Cria o botão "Registrar"
+                    var registrarButton = document.createElement('button');
+                    registrarButton.type = 'button'; // Para evitar o envio do formulário
+                    registrarButton.className = 'btn btn-primary align-self-center'; // Adicione classes de estilo
+                    registrarButton.textContent = 'Salvar';
+                    // Define a função onclick para chamar registrar com 'this' como parâmetro
+                    registrarButton.onclick = function() {
+                        registrar(this);  // Passa o botão (this) para a função registrar
+                    };
+
+                    // Adiciona o botão ao formulário
+                    form.appendChild(registrarButton);
+
+                    // Obtém o título do modal e atualiza o texto
+                    var modalTitle = document.querySelector('.modal-title'); // Seleciona o elemento h1
+                    modalTitle.textContent = `Já foram registradas alguns problemas ou sugestões para este local. Caso seu relato seja parecido com algum deles, assinale-o:`;
+
+                    verificaDiv.html(form);
+                    verificaModal.openModal();
+                } else {
+                    salvarAnswer();
+                }
+            },
+            error: function (error) {
+                console.error('Erro ao atualizar o status:', error);
+            }
+        });
+    }
+
+    function registrar(button) {
+        var form = button.parentElement;
+        console.log(form)
+        var form = new FormData(form);
+        // Obtém todos os radio buttons do grupo
+        const radioButtons = document.querySelectorAll('#feedbackForm input[type="radio"]');
+
+        // Encontra o radio button selecionado
+        let selectedValue = null;
+        for (const radioButton of radioButtons) {
+            if (radioButton.checked) {
+                selectedValue = radioButton.value;
+                break; // Sai do loop após encontrar o selecionado
+            }
+        }
+
+        if (selectedValue === 'outro') {
+            salvarAnswer();
+        } else if (selectedValue) { // Verifica se algum radio button foi selecionado
+            console.log("Feedback selecionado:", selectedValue); 
+            $.ajax({
+                url: '{% url "increase" %}',
+                type: 'POST',
+                data: form,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    console.log('deu certo');
+                    swal("Sucesso!", "Feedback enviado com Sucesso!", "success");
+                },
+                error: function (error) {
+                    console.error('Erro ao atualizar o status:', error);
+                }
+            });
+
+            $('#form_feedback input[type="text"]').val('');
+            $('#form_feedback select').val('');
+            $('#form_feedback textarea').val('');
+            // Resetar o input de arquivo, se necessário
+            $('#form_feedback input[type="file"]').val('');
+
+            verificaModal.closeModal()
+        } else {
+            // Nenhum radio button selecionado, trate o erro aqui (opcional)
+            alert("Nenhum feedback selecionado.");
+        }
+
+    }
+
+
+    function abrirCamera() {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function (stream) {
+                var video = document.createElement('video');
+                video.srcObject = stream;
+                video.autoplay = true;
+
+                // Adicione o elemento de vídeo à sua página ou exiba em um modal
+                document.body.appendChild(video);
+            })
+            .catch(function (error) {
+                console.error('Erro ao acessar a câmera:', error);
+                alert('Não foi possível acessar a câmera. Verifique se sua página está sendo carregada em um ambiente seguro (HTTPS) ou localhost.');
+            });
+    }
+
+    function validarArquivo(input) {
+        const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+        const file = input.files[0];
+
+        if (file && !allowedTypes.includes(file.type)) {
+            alert('Por favor, selecione um arquivo de imagem válido.');
+            input.value = ''; // Limpar o input para evitar envio acidental
+        }
+    }
+</script>
+{% endblock javascript %}
